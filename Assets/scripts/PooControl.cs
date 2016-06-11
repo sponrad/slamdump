@@ -5,10 +5,12 @@ public class PooControl : MonoBehaviour {
 
 	public float lifeTime = 2.5f;
 	public float speed = 2f;
+	public float rotationSpeedRange = 1500f;
 	public Vector3 target;
 	public AudioClip[] spawnSounds;
 	public ParticleSystem pooSplatParticle;
 	public Sprite[] pooSprites;
+	private float rotationSpeed = 0f;
 
 	private AudioSource audioSource;
 
@@ -26,6 +28,8 @@ public class PooControl : MonoBehaviour {
 
 		//destroy at end
 		Invoke("Destroy", lifeTime);
+
+		rotationSpeed = Random.Range (0f, rotationSpeedRange) - (rotationSpeedRange / 2f);
 	}
 	
 	void Update () {
@@ -33,6 +37,7 @@ public class PooControl : MonoBehaviour {
 		GetComponent<CircleCollider2D> ().enabled = false;
 
 		if (transform.position != target) {
+			transform.Rotate (0, 0, rotationSpeed * Time.deltaTime);
 			transform.position = Vector3.MoveTowards (transform.position, target, speed * Time.deltaTime);
 
 			if (transform.position == target) {
