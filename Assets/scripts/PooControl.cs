@@ -43,6 +43,7 @@ public class PooControl : MonoBehaviour {
 			if (transform.position == target) {
 				//set this after reaching destination, become a collider for a time!
 				GetComponent<CircleCollider2D> ().enabled = true;
+				GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
 			}
 		}
 	}
@@ -62,5 +63,5 @@ public class PooControl : MonoBehaviour {
 			//audioSource.Play ();
 		}
 	}
-
+		
 }
