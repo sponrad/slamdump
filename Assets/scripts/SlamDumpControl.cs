@@ -15,6 +15,10 @@ public class SlamDumpControl : MonoBehaviour {
 	public int score = 0;
 	public bool gameRunning = true;
 
+	public float startSpawnDelayCeiling = 2f;
+	public float endSpawnDelayCeiling = 0.25f;
+	public int endSpawnCeilingDelayScore = 100;  //used for scaling the endspawn ceiling, when the score is this the delay will be end value
+
 	// Use this for initialization
 	void Start () {
 		//start a timer for creating roaches
@@ -49,7 +53,13 @@ public class SlamDumpControl : MonoBehaviour {
 			y = UnityEngine.Random.Range(bounds.center.y - bounds.extents.y, bounds.center.y + bounds.extents.y);
 		} while (!collider.OverlapPoint(new Vector2(x, y)) );
 
-		float delay = Random.value * 2f;
+		float delay = 1f;
+
+		if (score < endSpawnCeilingDelayScore) {
+			delay = Random.value * (startSpawnDelayCeiling - ((startSpawnDelayCeiling - endSpawnDelayCeiling) * (score / 100f) ));
+		} else {
+			delay = Random.value * endSpawnDelayCeiling;
+		}
 			
 		if (gameRunning) {
 			Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
