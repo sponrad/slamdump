@@ -34,7 +34,7 @@ public static class GPGIds
         public const string achievement_four_for_0ne = "CgkI363G7ewOEAIQBw"; // <GPGSID>
         public const string achievement_200_kills = "CgkI363G7ewOEAIQAw"; // <GPGSID>
         public const string achievement_100_kills = "CgkI363G7ewOEAIQAg"; // <GPGSID>
-        public const string leaderboard_score = "CgkI363G7ewOEAIQAQ"; // <GPGSID>
+		public const string leaderboard_high_score = "CgkI363G7ewOEAIQCw";
 
 }
 }

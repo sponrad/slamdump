@@ -13,6 +13,7 @@ public class SlamDumpControl : MonoBehaviour {
 	public Text scoreText;
 
 	public int score = 0;
+
 	public bool gameRunning = true;
 
 	public float startSpawnDelayCeiling = 2f;
