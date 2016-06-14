@@ -36,7 +36,7 @@ public class TitleControl : MonoBehaviour {
 	}
 
 	public void ShowLeaderboard(){
-		Social.ShowLeaderboardUI ();
+		PlayGamesPlatform.Instance.ShowLeaderboardUI (scripts.GPGIds.leaderboard_score);
 	}
 
 
