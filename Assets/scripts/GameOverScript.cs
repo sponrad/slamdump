@@ -43,4 +43,8 @@ public class GameOverScript : MonoBehaviour {
 	void Update () {
 	
 	}
+
+	public void ShowLeaderboard(){
+		PlayGamesPlatform.Instance.ShowLeaderboardUI (scripts.GPGIds.leaderboard_high_score);
+	}
 }
