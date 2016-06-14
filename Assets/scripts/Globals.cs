@@ -6,6 +6,8 @@ public class Globals : MonoBehaviour
 
 	public static bool sound = true;
 
+	public static int score = 0;
+
 
 	void Awake()
 	{

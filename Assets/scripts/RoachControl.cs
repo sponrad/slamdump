@@ -41,8 +41,7 @@ public class RoachControl : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D coll) {
 		if (coll.gameObject.name == "PooPrefab(Clone)" && inWater == false) {
-			//update the score
-			GameObject.Find("Control").GetComponent<SlamDumpControl>().score += 1;
+			Globals.score += 1;
 
 			//sound
 			audioSource = GetComponent<AudioSource> ();

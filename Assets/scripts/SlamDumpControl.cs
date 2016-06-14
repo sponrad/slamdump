@@ -12,8 +12,6 @@ public class SlamDumpControl : MonoBehaviour {
 	public GameObject[] enemyPrefabs;
 	public Text scoreText;
 
-	public int score = 0;
-
 	public bool gameRunning = true;
 
 	public float startSpawnDelayCeiling = 2f;
@@ -40,7 +38,7 @@ public class SlamDumpControl : MonoBehaviour {
 
 		//update Score
 		//GameObject.Find("ScoreText").GetComponent<Text>().\
-		scoreText.text = score.ToString();
+		scoreText.text = Globals.score.ToString();
 	}
     
 	void SpawnEnemy(){
@@ -56,8 +54,8 @@ public class SlamDumpControl : MonoBehaviour {
 
 		float delay = 1f;
 
-		if (score < endSpawnCeilingDelayScore) {
-			delay = Random.value * (startSpawnDelayCeiling - ((startSpawnDelayCeiling - endSpawnDelayCeiling) * (score / 100f) ));
+		if (Globals.score < endSpawnCeilingDelayScore) {
+			delay = Random.value * (startSpawnDelayCeiling - ((startSpawnDelayCeiling - endSpawnDelayCeiling) * (Globals.score / 100f) ));
 		} else {
 			delay = Random.value * endSpawnDelayCeiling;
 		}

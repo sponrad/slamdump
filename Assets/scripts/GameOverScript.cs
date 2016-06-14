@@ -8,13 +8,11 @@ using UnityEngine.SocialPlatforms;
 public class GameOverScript : MonoBehaviour {
 
 	public Text scoreText;
-	public int score;
 	public Text messageText;
 
 	// Use this for initialization
 	void Start () {
-		score = GameObject.Find ("Control").GetComponent<SlamDumpControl> ().score;
-		scoreText.text = score.ToString();
+		scoreText.text = Globals.score.ToString();
 		messageText.text = "";
 
 		int prevScore = 0;
@@ -28,13 +26,13 @@ public class GameOverScript : MonoBehaviour {
 			(data) =>
 			{
 				prevScore = (int)data.PlayerScore.value;
-				if (score > prevScore){
+				if (Globals.score > prevScore){
 					messageText.text = "New High Score!";
 				}
 			
 			});
 
-		Social.ReportScore(score, scripts.GPGIds.leaderboard_high_score, (bool success) => {
+		Social.ReportScore(Globals.score, scripts.GPGIds.leaderboard_high_score, (bool success) => {
 			// handle success or failure
 		});
 	}
