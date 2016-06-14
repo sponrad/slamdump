@@ -1,5 +1,4 @@
-﻿/*
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
@@ -47,27 +46,4 @@ public class TitleControl : MonoBehaviour {
 		Social.ShowLeaderboardUI ();
 	}
 
-	public void GiveAchievement(){
-		Social.ReportProgress("CgkI363G7ewOEAIQAg", 100.0f, (bool success) => {
-			// handle success or failure
-			if (success){
-				Debug.Log("Achievement unlocked 100 kills");
-			}
-			else {
-				Debug.Log("Achievement unlock failed");
-			}
-		});	
-	}
-
-	public void ReportScore(){
-		Social.ReportScore (1500, "CgkI363G7ewOEAIQAQ", (bool success) => {
-			if (success) {
-				Debug.Log ("Score submitted");
-			} else {
-				Debug.Log ("Score submit failed");
-			}
-		});
-	}
 }
-
-*/

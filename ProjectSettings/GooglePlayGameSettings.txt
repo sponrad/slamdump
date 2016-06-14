@@ -1,0 +1,10 @@
+lastUpgrade=00934
+proj.pluginVersion=0.9.34
+proj.AppId=510257108703
+and.BundleId=com.slambdumpinc.slamdump
+proj.classDir=Assets
+proj.ConstantsClassName=scripts.GPGIds
+and.ResourceData=%3c%3fxml+version%3d%221.0%22+encoding%3d%22utf-8%22%3f%3e%0a%3c%21--%0aGoogle+Play+game+services+IDs.%0aSave+this+file+as+res%2fvalues%2fgames-ids.xml+in+your+project.%0a--%3e%0a%3cresources%3e%0a++%3cstring+name%3d%22app_id%22%3e510257108703%3c%2fstring%3e%0a++%3cstring+name%3d%22package_name%22%3ecom.slambdumpinc.slamdump%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_100_kills%22%3eCgkI363G7ewOEAIQAg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_200_kills%22%3eCgkI363G7ewOEAIQAw%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_500_kills%22%3eCgkI363G7ewOEAIQBA%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_two_for_one%22%3eCgkI363G7ewOEAIQBQ%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_three_for_one%22%3eCgkI363G7ewOEAIQBg%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_four_for_0ne%22%3eCgkI363G7ewOEAIQBw%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_precision_10%22%3eCgkI363G7ewOEAIQCA%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_precision_20%22%3eCgkI363G7ewOEAIQCQ%3c%2fstring%3e%0a++%3cstring+name%3d%22achievement_precision_30%22%3eCgkI363G7ewOEAIQCg%3c%2fstring%3e%0a++%3cstring+name%3d%22leaderboard_score%22%3eCgkI363G7ewOEAIQAQ%3c%2fstring%3e%0a%3c%2fresources%3e%0a
+and.ClientId=
+proj.requireGPlus=false
+android.SetupDone=true
