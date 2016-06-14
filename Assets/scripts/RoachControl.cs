@@ -47,7 +47,9 @@ public class RoachControl : MonoBehaviour {
 			//sound
 			audioSource = GetComponent<AudioSource> ();
 			audioSource.clip = splatSounds[Random.Range(0, splatSounds.Length)];
-			audioSource.Play ();
+			if (Globals.sound){
+				audioSource.Play ();
+			}
 
 			//poo splatter
 			ParticleSystem pooSplatParticleSys = Instantiate (coll.gameObject.GetComponent<PooControl>().pooSplatParticle, transform.position, Quaternion.identity) as ParticleSystem;

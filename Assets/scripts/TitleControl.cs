@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
@@ -6,18 +7,11 @@ using UnityEngine.SocialPlatforms;
 
 public class TitleControl : MonoBehaviour {
 
+	public Toggle soundToggle;
+
 	// Use this for initialization
 	void Start () {
 		PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder ()
-			// enables saving game 
-			//.EnableSavedGames()
-			// registers a callback to handle game invitations received while the game is not running.
-			//.WithInvitationDelegate(<callback method>)
-			// registers a callback for turn based match notifications received while the
-			// game is not running.
-			//.WithMatchDelegate(<callback method>)
-			// require access to a player's Google+ social graph (usually not needed)
-			//.RequireGooglePlus()
 			.Build();
 
 		GooglePlayGames.PlayGamesPlatform.InitializeInstance(config);
@@ -39,11 +33,22 @@ public class TitleControl : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
 	}
 
 	public void ShowLeaderboard(){
 		Social.ShowLeaderboardUI ();
+	}
+
+
+	public void SetSound()
+	{
+		if(soundToggle.isOn) {
+			Globals.sound = true;
+		} else {
+			Globals.sound = false;
+		}
+
+		Debug.Log (Globals.sound);
 	}
 
 }

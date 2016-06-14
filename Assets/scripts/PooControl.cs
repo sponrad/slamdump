@@ -24,7 +24,9 @@ public class PooControl : MonoBehaviour {
 		audioSource = GetComponent<AudioSource> ();
 
 		//play a sound!
-		audioSource.PlayOneShot(spawnSounds[Random.Range(0, spawnSounds.Length)]);
+		if (Globals.sound) {
+			audioSource.PlayOneShot (spawnSounds [Random.Range (0, spawnSounds.Length)]);
+		}
 
 		//destroy at end
 		Invoke("Destroy", lifeTime);
@@ -57,10 +59,6 @@ public class PooControl : MonoBehaviour {
 			Debug.Log ("water poo collide");
 		}
 		else if (coll.gameObject.tag == "Enemy") {
-			//sound
-			audioSource = GetComponent<AudioSource> ();
-			//audioSource.clip = splatSounds[Random.Range(0, splatSounds.Length)];
-			//audioSource.Play ();
 		}
 	}
 		
