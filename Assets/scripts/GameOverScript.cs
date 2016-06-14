@@ -24,7 +24,11 @@ public class GameOverScript : MonoBehaviour {
 				PlayerPrefs.SetInt ("highScore", Globals.score);
 				PlayerPrefs.Save ();
 			}
+		} else {
+			PlayerPrefs.SetInt ("highScore", Globals.score);
+			PlayerPrefs.Save ();
 		}
+			
 
 		Social.ReportScore(Globals.score, scripts.GPGIds.leaderboard_high_score, (bool success) => {
 			// handle success or failure
