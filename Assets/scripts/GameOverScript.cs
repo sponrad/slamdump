@@ -17,20 +17,14 @@ public class GameOverScript : MonoBehaviour {
 
 		int prevScore = 0;
 
-		PlayGamesPlatform.Instance.LoadScores(
-			scripts.GPGIds.leaderboard_high_score,
-			LeaderboardStart.PlayerCentered,
-			1,
-			LeaderboardCollection.Public,
-			LeaderboardTimeSpan.AllTime,
-			(data) =>
-			{
-				prevScore = (int)data.PlayerScore.value;
-				if (Globals.score > prevScore){
-					messageText.text = "New High Score!";
-				}
-			
-			});
+		if (PlayerPrefs.HasKey ("highScore")) {
+			prevScore = PlayerPrefs.GetInt ("highScore");
+			if (Globals.score > prevScore) {
+				messageText.text = "New High Score!";
+				PlayerPrefs.SetInt ("highScore", Globals.score);
+				PlayerPrefs.Save ();
+			}
+		}
 
 		Social.ReportScore(Globals.score, scripts.GPGIds.leaderboard_high_score, (bool success) => {
 			// handle success or failure
