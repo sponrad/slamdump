@@ -11,6 +11,9 @@ public class PooControl : MonoBehaviour {
 	public ParticleSystem pooSplatParticle;
 	public Sprite[] pooSprites;
 	private float rotationSpeed = 0f;
+	private bool landed = false;
+
+	public GameObject ripplePrefab;
 
 	private AudioSource audioSource;
 
@@ -44,10 +47,12 @@ public class PooControl : MonoBehaviour {
 			transform.Rotate (0, 0, rotationSpeed * Time.deltaTime);
 			transform.position = Vector3.MoveTowards (transform.position, target, speed * Time.deltaTime);
 
-			if (transform.position == target) {
+			if (transform.position == target && landed == false) {
 				//set this after reaching destination, become a collider for a time!
 				GetComponent<CircleCollider2D> ().enabled = true;
 				//GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
+				Instantiate (ripplePrefab);
+				landed = true;
 			}
 		}
 	}
