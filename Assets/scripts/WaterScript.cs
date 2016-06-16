@@ -16,10 +16,10 @@ public class WaterScript : MonoBehaviour {
 	
 	}
 
-	void OnTriggerEnter2D(Collider2D coll) {
+	/*void OnTriggerEnter2D(Collider2D coll) {
 		Debug.Log ("water collider fired");
 		if (coll.gameObject.tag == "Poo") {
 			Debug.Log ("water poo collide");
 		}
-	}
+	}*/
 }

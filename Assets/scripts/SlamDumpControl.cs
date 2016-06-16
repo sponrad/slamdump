@@ -11,6 +11,7 @@ public class SlamDumpControl : MonoBehaviour {
 	public GameObject pooPrefab;
 	public GameObject[] enemyPrefabs;
 	public Text scoreText;
+	public Text goldenStoolText;
 	public GameObject rewardBug;
 
 	public float rewardBugChance = 0.1f;
@@ -49,6 +50,7 @@ public class SlamDumpControl : MonoBehaviour {
 		//update Score
 		//GameObject.Find("ScoreText").GetComponent<Text>().\
 		scoreText.text = Globals.score.ToString();
+		goldenStoolText.text = Globals.goldenStool.ToString ();
 	}
     
 	void SpawnEnemy(){

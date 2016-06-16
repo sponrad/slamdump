@@ -12,21 +12,7 @@ public class TitleControl : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		//get it from prefs, set pref if not set
-		if (!PlayerPrefs.HasKey("sound")) {
-			PlayerPrefs.SetInt ("sound", 1);
-			PlayerPrefs.Save ();
-		}
-
-		//prefs should be set no matter what here
-		if (PlayerPrefs.GetInt("sound") == 1){
-			soundToggle.isOn = true;
-			Globals.sound = true;
-		}
-		else{
-			soundToggle.isOn = false;
-			Globals.sound = false;
-		}
+		loadPlayerPrefs ();
 
 
 		PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder ()
@@ -70,6 +56,28 @@ public class TitleControl : MonoBehaviour {
 		}
 		PlayerPrefs.Save ();
 
+	}
+
+	public void loadPlayerPrefs(){
+		//get it from prefs, set pref if not set
+		if (!PlayerPrefs.HasKey("sound")) {
+			PlayerPrefs.SetInt ("sound", 1);
+			PlayerPrefs.Save ();
+		}
+
+		//prefs should be set no matter what here
+		if (PlayerPrefs.GetInt("sound") == 1){
+			soundToggle.isOn = true;
+			Globals.sound = true;
+		}
+		else{
+			soundToggle.isOn = false;
+			Globals.sound = false;
+		}
+
+		if (PlayerPrefs.HasKey ("goldenStool")) {
+			Globals.goldenStool = PlayerPrefs.GetInt ("goldenStool");
+		}
 	}
 
 }
