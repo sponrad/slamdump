@@ -11,12 +11,18 @@ public class SlamDumpControl : MonoBehaviour {
 	public GameObject pooPrefab;
 	public GameObject[] enemyPrefabs;
 	public Text scoreText;
+	public GameObject rewardBug;
+
+	public float rewardBugChance = 0.1f;
 
 	public bool gameRunning = true;
 
 	public float startSpawnDelayCeiling = 2f;
 	public float endSpawnDelayCeiling = 0.25f;
-	public int endSpawnCeilingDelayScore = 100;  //used for scaling the endspawn ceiling, when the score is this the delay will be end value
+	public int endSpawnCeilingDelayScore = 200;  //used for scaling the endspawn ceiling, when the score is this the delay will be end value
+
+	private Bounds waterBounds;
+	private Collider2D waterCollider;
 
 	// Use this for initialization
 	void Start () {
@@ -24,6 +30,9 @@ public class SlamDumpControl : MonoBehaviour {
 		//start a timer for creating roaches
 		Invoke("SpawnEnemy", 2f);
 		gameRunning = true;
+
+		waterCollider = GameObject.Find ("WaterCollider").GetComponent<Collider2D> ();
+		waterBounds = waterCollider.bounds;
 	}
 
 	// Update is called once per frame
@@ -43,15 +52,17 @@ public class SlamDumpControl : MonoBehaviour {
 	}
     
 	void SpawnEnemy(){
-		Collider2D collider = GameObject.Find ("WaterCollider").GetComponent<Collider2D> ();
-		Bounds bounds = collider.bounds;
+		//chance to spawn a rewardBug
+		if (Random.value < rewardBugChance) {
+			SpawnRewardBug ();
+		}
 
 		float x = 0;
 		float y = 0;
 		do {
-			x = UnityEngine.Random.Range(bounds.center.x - bounds.extents.x, bounds.center.x + bounds.extents.x);
-			y = UnityEngine.Random.Range(bounds.center.y - bounds.extents.y, bounds.center.y + bounds.extents.y);
-		} while (!collider.OverlapPoint(new Vector2(x, y)) );
+			x = UnityEngine.Random.Range(waterBounds.center.x - waterBounds.extents.x, waterBounds.center.x + waterBounds.extents.x);
+			y = UnityEngine.Random.Range(waterBounds.center.y - waterBounds.extents.y, waterBounds.center.y + waterBounds.extents.y);
+		} while (!waterCollider.OverlapPoint(new Vector2(x, y)) );
 
 		float delay = 1f;
 
@@ -65,5 +76,16 @@ public class SlamDumpControl : MonoBehaviour {
 			Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
 			Invoke ("SpawnEnemy", delay);
 		}
+	}
+
+	void SpawnRewardBug(){
+		float x = 0;
+		float y = 0;
+		do {
+			x = UnityEngine.Random.Range(waterBounds.center.x - waterBounds.extents.x, waterBounds.center.x + waterBounds.extents.x);
+			y = UnityEngine.Random.Range(waterBounds.center.y - waterBounds.extents.y, waterBounds.center.y + waterBounds.extents.y);
+		} while (!waterCollider.OverlapPoint(new Vector2(x, y)) );
+
+		Instantiate (rewardBug, new Vector3 (x, y, -1f), Quaternion.identity);
 	}
 }

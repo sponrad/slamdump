@@ -45,21 +45,13 @@ public class PooControl : MonoBehaviour {
 			if (transform.position == target) {
 				//set this after reaching destination, become a collider for a time!
 				GetComponent<CircleCollider2D> ().enabled = true;
-				GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
+				//GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
 			}
 		}
 	}
 
 	void Destroy(){
 		Destroy (this.gameObject);
-	}
-
-	void OnTriggerEnter2D(Collider2D coll) {
-		if (coll.gameObject.name == "WaterCollider") {
-			Debug.Log ("water poo collide");
-		}
-		else if (coll.gameObject.tag == "Enemy") {
-		}
 	}
 		
 }
