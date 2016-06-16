@@ -71,16 +71,23 @@ public class SlamDumpControl : MonoBehaviour {
 
 		float delay = 1f;
 
-		if (Globals.score < endSpawnCeilingDelayScore) {
+		//need to document this
+		//delay is decreasing in relation to the score increasing, and based on the two ceilings
+		/*if (Globals.score < endSpawnCeilingDelayScore) {
 			delay = Random.value * (startSpawnDelayCeiling - ((startSpawnDelayCeiling - endSpawnDelayCeiling) * (Globals.score / 100f) ));
 		} else {
 			delay = Random.value * endSpawnDelayCeiling;
-		}
+		}*/
+
+		delay = 2 / 0.1f * Globals.score * Mathf.Sin (0.5f * Globals.score) + 0.25f * (Globals.score + 1);
+		Debug.Log (delay);
 			
 		if (gameRunning) {
 			Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
 			Invoke ("SpawnEnemy", delay);
 		}
+
+		//Time.timeSinceLevelLoad
 	}
 
 	void SpawnRewardBug(){
