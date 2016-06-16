@@ -35,6 +35,19 @@ public class GameOverScript : MonoBehaviour {
 		Social.ReportScore(Globals.score, scripts.GPGIds.leaderboard_high_score, (bool success) => {
 			// handle success or failure
 		});
+
+		Globals.totalBugKills += Globals.tempGameBugsKilled;
+		Globals.totalGamesPlayed += 1;
+		Globals.totalShotsFired += Globals.tempShotsFired;
+		Globals.totalHits += Globals.tempGameBugsKilled;
+
+		PlayerPrefs.SetInt ("goldenStool", Globals.goldenStool);
+		PlayerPrefs.SetInt ("totalBugsKilled", Globals.totalBugKills);
+		PlayerPrefs.SetInt ("totalGamesPlayed", Globals.totalGamesPlayed);
+		PlayerPrefs.SetInt ("totalShotsFired", Globals.totalShotsFired);
+		PlayerPrefs.SetInt ("totalHits", Globals.totalHits);
+
+		PlayerPrefs.Save ();
 	}
 	
 	// Update is called once per frame

@@ -78,6 +78,25 @@ public class TitleControl : MonoBehaviour {
 		if (PlayerPrefs.HasKey ("goldenStool")) {
 			Globals.goldenStool = PlayerPrefs.GetInt ("goldenStool");
 		}
+
+		if (PlayerPrefs.HasKey ("totalBugKills")) {
+			Globals.totalBugKills = PlayerPrefs.GetInt ("goldenStool");
+		}
+
+		if (PlayerPrefs.HasKey ("totalGamesPlayed")) {
+			Globals.totalGamesPlayed = PlayerPrefs.GetInt ("totalGamesPlayed");
+		}
+
+		if (PlayerPrefs.HasKey ("totalShotsFired")) {
+			Globals.totalShotsFired = PlayerPrefs.GetInt ("totalShotsFired");
+		}
+
+		if (PlayerPrefs.HasKey ("totalHits")) {
+			Globals.totalHits = PlayerPrefs.GetInt ("totalHits");
+		}
+
+		PlayerPrefs.Save ();
+
 	}
 
 }

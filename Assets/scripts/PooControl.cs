@@ -15,6 +15,8 @@ public class PooControl : MonoBehaviour {
 	private AudioSource audioSource;
 
 	void Start () {
+		Globals.tempShotsFired += 1;
+
 		//not a collider while flying across the screen
 		GetComponent<CircleCollider2D> ().enabled = false;
 

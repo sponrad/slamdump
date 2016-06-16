@@ -56,6 +56,8 @@ public class RoachControl : MonoBehaviour {
 
 			speed = 0f;
 			Destroy (this.gameObject, audioSource.clip.length);
+
+			Globals.tempGameBugsKilled += 1;
 		}
 	}
 }

@@ -28,6 +28,9 @@ public class SlamDumpControl : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Globals.score = 0;
+		Globals.tempGameBugsKilled = 0;
+		Globals.tempShotsFired = 0;
+
 		//start a timer for creating roaches
 		Invoke("SpawnEnemy", 2f);
 		gameRunning = true;
