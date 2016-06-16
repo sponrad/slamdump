@@ -11,6 +11,8 @@ public class RoachControl : MonoBehaviour {
 	private AudioSource audioSource;
 	private bool inWater = true;
 
+	public Sprite splatSprite;
+
 	// Use this for initialization
 	void Start () {
 		direction = Random.Range (0, 360);
@@ -26,12 +28,12 @@ public class RoachControl : MonoBehaviour {
 
 	void OnTriggerExit2D(Collider2D coll){
 		if (coll.gameObject.name == "WaterCollider") {
-			Debug.Log ("LEFT THE WATER");
+			//Debug.Log ("LEFT THE WATER");
 			inWater = false;
 		}
 
 		if (coll.gameObject.name == "Exit") {
-			Debug.Log ("LEFT THE TOILET");
+			//Debug.Log ("LEFT THE TOILET");
 			UnityEngine.SceneManagement.SceneManager.LoadScene ("GameOver", UnityEngine.SceneManagement.LoadSceneMode.Additive);
 			GameObject.Find("Control").GetComponent<SlamDumpControl>().gameRunning = false;
 			//pause the game
@@ -53,6 +55,9 @@ public class RoachControl : MonoBehaviour {
 			//poo splatter
 			ParticleSystem pooSplatParticleSys = Instantiate (coll.gameObject.GetComponent<PooControl>().pooSplatParticle, transform.position, Quaternion.identity) as ParticleSystem;
 			pooSplatParticleSys.Play ();
+
+			//swap poo to splat sprite
+			coll.GetComponent<SpriteRenderer>().sprite = splatSprite;
 
 			speed = 0f;
 			Destroy (this.gameObject, audioSource.clip.length);

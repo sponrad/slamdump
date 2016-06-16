@@ -26,7 +26,7 @@ public class GoldenRoachControl : MonoBehaviour {
 
 	void OnTriggerExit2D(Collider2D coll){
 		if (coll.gameObject.name == "WaterCollider") {
-			Debug.Log ("LEFT THE WATER");
+			//Debug.Log ("LEFT THE WATER");
 			inWater = false;
 		}
 	}
