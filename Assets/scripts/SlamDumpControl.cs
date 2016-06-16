@@ -79,11 +79,16 @@ public class SlamDumpControl : MonoBehaviour {
 			delay = Random.value * endSpawnDelayCeiling;
 		}*/
 
-		delay = 2 / 0.1f * Globals.score * Mathf.Sin (0.5f * Globals.score) + 0.25f * (Globals.score + 1);
-		Debug.Log (delay);
-			
+		delay = Random.value * 4f;
+		//spawn count factor returns an integer based on a sine function, negative numbers are ignored later on
+		int spawnCountFactor = Mathf.CeilToInt( 0.05f * Globals.score * Mathf.Sin (0.4f * Mathf.Pow (Globals.score, 0.85f)));
+		Debug.Log (spawnCountFactor);
+					
 		if (gameRunning) {
 			Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
+			for (int i = 0; i < spawnCountFactor; i++) {
+				Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
+			}
 			Invoke ("SpawnEnemy", delay);
 		}
 
