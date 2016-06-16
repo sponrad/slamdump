@@ -53,7 +53,6 @@ public class RoachControl : MonoBehaviour {
 			//poo splatter
 			ParticleSystem pooSplatParticleSys = Instantiate (coll.gameObject.GetComponent<PooControl>().pooSplatParticle, transform.position, Quaternion.identity) as ParticleSystem;
 			pooSplatParticleSys.Play ();
-			Destroy (pooSplatParticleSys, pooSplatParticleSys.duration);
 
 			speed = 0f;
 			Destroy (this.gameObject, audioSource.clip.length);
