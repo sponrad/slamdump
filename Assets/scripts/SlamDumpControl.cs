@@ -59,7 +59,7 @@ public class SlamDumpControl : MonoBehaviour {
 	void SpawnEnemy(){
 		//chance to spawn a rewardBug
 		if (Random.value < rewardBugChance) {
-			SpawnRewardBug ();
+			//SpawnRewardBug ();
 		}
 
 		float x = 0;
