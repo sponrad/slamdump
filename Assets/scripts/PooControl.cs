@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PooControl : MonoBehaviour {
 
-	public float lifeTime = 2.5f;
+	public float lifeTime = 3.5f;
 	public float speed = 2f;
 	public float rotationSpeedRange = 1500f;
 	public Vector3 target;
@@ -58,7 +58,8 @@ public class PooControl : MonoBehaviour {
 			if (transform.position == target && landed == false) {
 				//set this after reaching destination, become a collider for a time!
 				GetComponent<CircleCollider2D> ().enabled = true;
-				//GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
+
+				GameObject.Find("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
 				Instantiate (ripplePrefab);
 				landed = true;
 

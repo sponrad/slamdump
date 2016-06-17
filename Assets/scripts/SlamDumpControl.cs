@@ -14,14 +14,11 @@ public class SlamDumpControl : MonoBehaviour {
 	public Text goldenStoolText;
 	public GameObject rewardBug;
 	public int introBugs = 5;
+	public float delayModifier = 4f;
 
 	public float rewardBugChance = 0.1f;
 
 	public bool gameRunning = true;
-
-	public float startSpawnDelayCeiling = 2f;
-	public float endSpawnDelayCeiling = 0.25f;
-	public int endSpawnCeilingDelayScore = 200;  //used for scaling the endspawn ceiling, when the score is this the delay will be end value
 
 	private Bounds waterBounds;
 	private Collider2D waterCollider;
@@ -76,9 +73,9 @@ public class SlamDumpControl : MonoBehaviour {
 
 		float delay = 1f;
 
-		delay = Random.value * 4f;
+		delay = Random.value * delayModifier;
 
-		//spawn count factor returns an integer based on a sine function, negative numbers are ignored later on
+		//spawn count factor returns an integer based on a sine function, negative numbers are ignored later on in for loop
 		int spawnCountFactor = Mathf.CeilToInt( 0.05f * Globals.score * Mathf.Sin (0.4f * Mathf.Pow (Globals.score, 0.85f)));
 		//Debug.Log (spawnCountFactor);
 					
