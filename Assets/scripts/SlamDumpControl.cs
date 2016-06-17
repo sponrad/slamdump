@@ -13,6 +13,7 @@ public class SlamDumpControl : MonoBehaviour {
 	public Text scoreText;
 	public Text goldenStoolText;
 	public GameObject rewardBug;
+	public int introBugs = 5;
 
 	public float rewardBugChance = 0.1f;
 
@@ -37,6 +38,10 @@ public class SlamDumpControl : MonoBehaviour {
 
 		waterCollider = GameObject.Find ("WaterCollider").GetComponent<Collider2D> ();
 		waterBounds = waterCollider.bounds;
+
+		for (int i = 0; i < introBugs; i++) {
+			SpawnIntroBug ();
+		}
 	}
 
 	// Update is called once per frame
@@ -71,15 +76,8 @@ public class SlamDumpControl : MonoBehaviour {
 
 		float delay = 1f;
 
-		//need to document this
-		//delay is decreasing in relation to the score increasing, and based on the two ceilings
-		/*if (Globals.score < endSpawnCeilingDelayScore) {
-			delay = Random.value * (startSpawnDelayCeiling - ((startSpawnDelayCeiling - endSpawnDelayCeiling) * (Globals.score / 100f) ));
-		} else {
-			delay = Random.value * endSpawnDelayCeiling;
-		}*/
-
 		delay = Random.value * 4f;
+
 		//spawn count factor returns an integer based on a sine function, negative numbers are ignored later on
 		int spawnCountFactor = Mathf.CeilToInt( 0.05f * Globals.score * Mathf.Sin (0.4f * Mathf.Pow (Globals.score, 0.85f)));
 		//Debug.Log (spawnCountFactor);
@@ -93,6 +91,17 @@ public class SlamDumpControl : MonoBehaviour {
 		}
 
 		//Time.timeSinceLevelLoad
+	}
+
+	void SpawnIntroBug(){
+		float x = 0;
+		float y = 0;
+		do {
+			x = UnityEngine.Random.Range(waterBounds.center.x - waterBounds.extents.x, waterBounds.center.x + waterBounds.extents.x);
+			y = UnityEngine.Random.Range(waterBounds.center.y - waterBounds.extents.y, waterBounds.center.y + waterBounds.extents.y);
+		} while (!waterCollider.OverlapPoint(new Vector2(x, y)) );
+
+		Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);
 	}
 
 	void SpawnRewardBug(){
