@@ -94,6 +94,9 @@ public class TitleControl : MonoBehaviour {
 		if (PlayerPrefs.HasKey ("totalHits")) {
 			Globals.totalHits = PlayerPrefs.GetInt ("totalHits");
 		}
+		if (PlayerPrefs.HasKey ("highScore")) {
+			Globals.highScore = PlayerPrefs.GetInt ("highScore");
+		}
 
 		PlayerPrefs.Save ();
 

@@ -23,6 +23,7 @@ public class GameOverScript : MonoBehaviour {
 				messageText.text = "New High Score!";
 				PlayerPrefs.SetInt ("highScore", Globals.score);
 				PlayerPrefs.Save ();
+				Globals.highScore = Globals.score;
 			} else {
 				messageText.text = "High score: " + prevScore;
 			}

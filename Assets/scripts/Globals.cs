@@ -9,6 +9,8 @@ public class Globals : MonoBehaviour
 	public static int score = 0;
 	public static int goldenStool = 0;
 
+	public static int highScore = 0;
+
 	public static int totalBugKills = 0;
 	public static int totalGamesPlayed = 0;
 	public static int totalShotsFired = 0;
