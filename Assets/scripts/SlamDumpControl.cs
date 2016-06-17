@@ -82,7 +82,7 @@ public class SlamDumpControl : MonoBehaviour {
 		delay = Random.value * 4f;
 		//spawn count factor returns an integer based on a sine function, negative numbers are ignored later on
 		int spawnCountFactor = Mathf.CeilToInt( 0.05f * Globals.score * Mathf.Sin (0.4f * Mathf.Pow (Globals.score, 0.85f)));
-		Debug.Log (spawnCountFactor);
+		//Debug.Log (spawnCountFactor);
 					
 		if (gameRunning) {
 			Instantiate (enemyPrefabs [Random.Range (0, enemyPrefabs.Length)], new Vector3 (x, y, -1f), Quaternion.identity);

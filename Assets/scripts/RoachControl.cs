@@ -59,6 +59,9 @@ public class RoachControl : MonoBehaviour {
 			//swap poo to splat sprite
 			coll.GetComponent<SpriteRenderer>().sprite = splatSprite;
 
+			//turn off bug sprite on this
+			GetComponent<SpriteRenderer>().enabled = false;
+
 			speed = 0f;
 			Destroy (this.gameObject, audioSource.clip.length);
 
