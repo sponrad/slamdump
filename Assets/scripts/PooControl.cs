@@ -9,6 +9,7 @@ public class PooControl : MonoBehaviour {
 	public Vector3 target;
 	public AudioClip[] spawnSounds;
 	public ParticleSystem pooSplatParticle;
+	public ParticleSystem splashParticle;
 	public Sprite[] pooSprites;
 	private float rotationSpeed = 0f;
 	private bool landed = false;
@@ -16,6 +17,10 @@ public class PooControl : MonoBehaviour {
 	public GameObject ripplePrefab;
 
 	private AudioSource audioSource;
+
+	//private Bounds waterBounds;
+	private Collider2D waterCollider;
+
 
 	void Start () {
 		Globals.tempShotsFired += 1;
@@ -37,6 +42,9 @@ public class PooControl : MonoBehaviour {
 		Invoke("Destroy", lifeTime);
 
 		rotationSpeed = Random.Range (0f, rotationSpeedRange) - (rotationSpeedRange / 2f);
+
+		waterCollider = GameObject.Find ("WaterCollider").GetComponent<Collider2D> ();
+
 	}
 	
 	void Update () {
@@ -53,6 +61,11 @@ public class PooControl : MonoBehaviour {
 				//GameObject.Find ("Main Camera").GetComponent<CameraShake> ().shakeDuration = .20f;
 				Instantiate (ripplePrefab);
 				landed = true;
+
+				//spawn a splash if it is within the bounds of the water
+				if (waterCollider.OverlapPoint (new Vector2 (transform.position.x, transform.position.y))) {
+					Instantiate(splashParticle, new Vector3(transform.position.x, transform.position.y, -2f), Quaternion.identity);
+				}
 			}
 		}
 	}

@@ -16,12 +16,4 @@ public class WaterScript : MonoBehaviour {
 	
 	}
 
-	void OnTriggerEnter2D(Collider2D coll) {
-		Debug.Log ("poo collider fired");
-		Debug.Log (coll.gameObject.name);
-		if (coll.gameObject.name == "PooPrefab(Clone)") {
-			Debug.Log ("water poo collide");
-		}
-	}
-
 }
