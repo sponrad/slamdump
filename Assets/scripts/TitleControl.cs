@@ -14,7 +14,7 @@ public class TitleControl : MonoBehaviour {
 
 		loadPlayerPrefs ();
 
-
+		
 		PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder ()
 			.Build();
 

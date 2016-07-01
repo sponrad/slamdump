@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class RoachControl : MonoBehaviour {
+public class WormControl : MonoBehaviour {
 
 	public float speed = 0.4f;
 	public float minSpeed = 0.1f;
 	private float direction = 0f;
 	public AudioClip[] splatSounds;
+
+	public bool isBigWorm = false;
+	public GameObject smallWorm;
 
 	private AudioSource audioSource;
 	private bool inWater = true;
@@ -23,7 +26,7 @@ public class RoachControl : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		//move in direction
-		transform.position += transform.up * Time.deltaTime * speed;
+		transform.position -= transform.right * Time.deltaTime * speed;
 	}
 
 	void OnTriggerExit2D(Collider2D coll){

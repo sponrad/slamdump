@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.SocialPlatforms;
 
 
-public class SlamDumpControl : MonoBehaviour {
+public class GasStationControl : MonoBehaviour {
 
 	public GameObject pooPrefab;
 	public GameObject[] enemyPrefabs;
