@@ -10,18 +10,20 @@ public class WormControl : MonoBehaviour {
 
 	public bool isBigWorm = false;
 	public GameObject smallWorm;
+	public float spawnOffspringDelay = 1.5f;
 
 	private AudioSource audioSource;
-	private bool inWater = true;
+	public bool inWater = true;
 
 	public Sprite splatSprite;
+	public ParticleSystem spawnParticle;
 
 	// Use this for initialization
 	void Start () {
 		direction = Random.Range (0, 360);
 		speed = Random.Range (minSpeed, speed);
 		transform.Rotate(new Vector3(0f, 0f, direction));
-	}
+		}
 
 	// Update is called once per frame
 	void Update () {
@@ -66,9 +68,29 @@ public class WormControl : MonoBehaviour {
 			GetComponent<SpriteRenderer>().enabled = false;
 
 			speed = 0f;
-			Destroy (this.gameObject, audioSource.clip.length);
 
-			Globals.tempGameBugsKilled += 1;
+			if (isBigWorm == true) {
+				Invoke ("spawnTwoWorms", spawnOffspringDelay);
+				Debug.Log ("BIG WORM");
+			} else {
+				Globals.tempGameBugsKilled += 1;
+				Debug.Log ("LITTLE WORM");
+			}
+
+			Destroy (this.gameObject, spawnOffspringDelay);
+
 		}
+	}
+
+	void spawnTwoWorms(){
+		//play a gross green particle effect
+		ParticleSystem spawnParticleSys = Instantiate (spawnParticle, transform.position, Quaternion.identity) as ParticleSystem;
+		spawnParticleSys.Play ();
+
+		GameObject wormone = Instantiate (smallWorm, new Vector3 (transform.position.x, transform.position.y, -1f), Quaternion.identity) as GameObject;
+		GameObject wormtwo = Instantiate (smallWorm, new Vector3 (transform.position.x, transform.position.y, -1f), Quaternion.identity) as GameObject;
+
+		wormone.GetComponent<WormControl> ().inWater = false;
+		wormtwo.GetComponent<WormControl> ().inWater = false;
 	}
 }
