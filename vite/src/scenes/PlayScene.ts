@@ -389,7 +389,6 @@ export class PlayScene {
     this.unbindInput();
     this.stopTicker();
     this.bringDebugToFront();
-    audioManager.playGrunt();
     this.onGameOver();
   }
 

@@ -10,7 +10,6 @@ const MAX_PLAYS_PER_FRAME = 2;
 const COOLDOWN_SEC: Record<AudioCategory, number> = {
   pooSpawn: 0.08,
   splat: 0.05,
-  grunt: 0.2,
 };
 
 type AudioContextCtor = typeof AudioContext;
@@ -252,9 +251,6 @@ export class AudioManager {
   }
   playSplat(): void {
     this.play('splat');
-  }
-  playGrunt(): void {
-    this.play('grunt');
   }
 }
 
