@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>SlamDump</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #2a2520;
+        touch-action: none;
+        overscroll-behavior: none;
+      }
+      #game {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-user-drag: none;
+      }
+      body.gameplay-active,
+      body.gameplay-active #game,
+      body.gameplay-active canvas {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        -webkit-user-drag: none !important;
+      }
+
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #2a2520;
+        color: #f2e8d5;
+        font-family: Arial, Helvetica, sans-serif;
+        transition: opacity 0.35s ease;
+      }
+      #boot-loader.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot-loader .spinner {
+        width: 42px;
+        height: 42px;
+        border: 3px solid rgba(242, 232, 213, 0.25);
+        border-top-color: #f2e8d5;
+        border-radius: 50%;
+        animation: boot-spin 0.8s linear infinite;
+      }
+      #boot-loader p {
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 0.04em;
+      }
+      @keyframes boot-spin {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes score-save-in {
+        from { transform: translateY(10px) scale(0.94); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+      }
+      @keyframes score-best-pulse {
+        0%, 100% { transform: scale(1); }
+        40% { transform: scale(1.08); }
+      }
+
+      #score-save-prompt {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.35);
+        font-family: Arial, Helvetica, sans-serif;
+        color: #1a1a1a;
+        touch-action: auto;
+      }
+      #score-save-prompt[hidden] {
+        display: none !important;
+      }
+      .score-save-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 22px 24px 18px;
+        width: min(320px, calc(100vw - 40px));
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        touch-action: auto;
+      }
+      .score-save-card.score-save-in {
+        animation: score-save-in 0.38s cubic-bezier(0.2, 1.35, 0.3, 1);
+      }
+      .score-save-kicker {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #555;
+        margin-bottom: 4px;
+      }
+      .score-save-value {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 14px;
+      }
+      .score-save-value.is-new-best {
+        animation: score-best-pulse 0.7s ease;
+      }
+      .score-save-card label {
+        display: block;
+        font-size: 15px;
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      #score-save-name {
+        width: 100%;
+        font-size: 18px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        text-align: center;
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
+        touch-action: manipulation;
+      }
+      .score-save-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+      .score-save-save,
+      .score-save-skip {
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .score-save-save {
+        background: #1a1a1a;
+        color: #fff;
+        border: 0;
+        min-width: 96px;
+      }
+      .score-save-skip {
+        background: #fff;
+        color: #333;
+        border: 1px solid #ddd;
+        min-width: 96px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="boot-loader" aria-live="polite" aria-busy="true">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading…</p>
+    </div>
+    <canvas id="game"></canvas>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

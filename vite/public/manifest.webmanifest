@@ -1,0 +1,16 @@
+{
+  "name": "SlamDump",
+  "short_name": "SlamDump",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2a2520",
+  "theme_color": "#2a2520",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/sprites/larryIcon.png",
+      "sizes": "484x513",
+      "type": "image/png"
+    }
+  ]
+}
