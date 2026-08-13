@@ -101,6 +101,7 @@ export const BUG_DEFS: Record<
   },
   wormBig: {
     sprite: '/sprites/worm1.png',
+    splatSprite: '/sprites/worm11.png',
     speed: 32,
     minSpeed: 8,
     displayScale: 0.28,
@@ -110,6 +111,7 @@ export const BUG_DEFS: Record<
   },
   wormSmall: {
     sprite: '/sprites/worm2.png',
+    splatSprite: '/sprites/worm21.png',
     speed: 38,
     minSpeed: 10,
     displayScale: 0.35,
@@ -118,6 +120,7 @@ export const BUG_DEFS: Record<
   },
   golden: {
     sprite: '/sprites/gondelroach.png',
+    splatSprite: '/sprites/orangeRoachSplat.png',
     speed: 48,
     minSpeed: 16,
     displayScale: 0.85,

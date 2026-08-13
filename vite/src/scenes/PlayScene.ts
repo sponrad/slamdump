@@ -10,7 +10,6 @@ import {
 } from 'pixi.js';
 import { Globals } from '../game/Globals';
 import {
-  BUG_DEFS,
   DESIGN_H,
   DESIGN_W,
   FIRST_SPAWN_DELAY,
@@ -132,7 +131,9 @@ export class PlayScene {
       '/sprites/greenpincherSplat.png',
       '/sprites/gondelroach.png',
       '/sprites/worm1.png',
+      '/sprites/worm11.png',
       '/sprites/worm2.png',
+      '/sprites/worm21.png',
       '/sprites/poop1.png',
       '/sprites/poop2.png',
       '/sprites/poop3.png',
@@ -301,8 +302,6 @@ export class PlayScene {
       const r = hitR + bug.hitRadius;
       if (dx * dx + dy * dy <= r * r && bug.tryHit()) {
         hitSomeone = true;
-        const splat = BUG_DEFS[bug.kind].splatSprite;
-        if (splat) ev.setSplatTexture(splat);
       }
     }
     if (hitSomeone) this.updateHud();

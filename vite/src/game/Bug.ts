@@ -105,6 +105,8 @@ export class Bug {
 
     audioManager.playSplat();
 
+    this.showSplat();
+
     if (this.def.isGolden) {
       Globals.goldenStool += 1;
       this.dying = true;
@@ -115,17 +117,28 @@ export class Bug {
     Globals.score += 1;
 
     if (this.def.isBigWorm) {
-      this.sprite.visible = false;
       this.dying = true;
       this.spawnKids = true;
       this.dieTimer = WORM_OFFSPRING_DELAY;
     } else {
       Globals.tempGameBugsKilled += 1;
-      this.sprite.visible = false;
       this.dying = true;
       this.dieTimer = 0.35;
     }
     return true;
+  }
+
+  private showSplat(): void {
+    const splat = this.def.splatSprite;
+    if (!splat) {
+      this.sprite.visible = false;
+      return;
+    }
+    const liveW = this.sprite.texture.width * Math.abs(this.sprite.scale.x);
+    this.sprite.texture = Texture.from(splat);
+    const splatW = this.sprite.texture.width || 1;
+    this.sprite.scale.set(liveW / splatW);
+    this.sprite.visible = true;
   }
 
   destroy(): void {

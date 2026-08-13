@@ -21,6 +21,149 @@ function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
+let ffmpegAvailable = false;
+try {
+  execSync('ffmpeg -version', { stdio: 'ignore' });
+  ffmpegAvailable = true;
+} catch (_) {}
+
+if (!ffmpegAvailable) {
+  console.warn(
+    'ffmpeg not found; JPEG-as-PNG sprites and .aiff audio will copy as-is. Install ffmpeg for conversion.'
+  );
+}
+
+function isJpeg(filePath) {
+  const fd = fs.openSync(filePath, 'r');
+  const buf = Buffer.alloc(3);
+  fs.readSync(fd, buf, 0, 3, 0);
+  fs.closeSync(fd);
+  return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+}
+
+function spriteSize(filePath) {
+  const out = execSync(
+    `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "${filePath}"`,
+    { encoding: 'utf8' }
+  ).trim();
+  const [w, h] = out.split(',').map(Number);
+  return { w, h };
+}
+
+function isNearWhite(r, g, b) {
+  return r >= 240 && g >= 240 && b >= 240;
+}
+
+function isNearBlack(r, g, b) {
+  return r <= 18 && g <= 18 && b <= 18;
+}
+
+/**
+ * JPEG splat art has a white canvas + 1px black frame. Global white-key would
+ * also punch out white bands on the worm, so flood-fill from the edges only.
+ */
+function jpegToTransparentPng(srcPath, destPath) {
+  const { w, h } = spriteSize(srcPath);
+  const rgbPath = destPath + '.rgb';
+  const rgbaPath = destPath + '.rgba';
+  execSync(`ffmpeg -y -i "${srcPath}" -f rawvideo -pix_fmt rgb24 "${rgbPath}"`, {
+    stdio: 'ignore',
+  });
+  const rgb = fs.readFileSync(rgbPath);
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    const o = i * 3;
+    const d = i * 4;
+    rgba[d] = rgb[o];
+    rgba[d + 1] = rgb[o + 1];
+    rgba[d + 2] = rgb[o + 2];
+    rgba[d + 3] = 255;
+  }
+
+  const seen = new Uint8Array(w * h);
+  const stack = [];
+  const push = (x, y) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    const i = y * w + x;
+    if (seen[i]) return;
+    const o = i * 3;
+    const r = rgb[o];
+    const g = rgb[o + 1];
+    const b = rgb[o + 2];
+    const onRim = x <= 1 || y <= 1 || x >= w - 2 || y >= h - 2;
+    if (isNearWhite(r, g, b) || (onRim && isNearBlack(r, g, b))) {
+      seen[i] = 1;
+      stack.push(i);
+    }
+  };
+
+  for (let x = 0; x < w; x++) {
+    push(x, 0);
+    push(x, h - 1);
+  }
+  for (let y = 0; y < h; y++) {
+    push(0, y);
+    push(w - 1, y);
+  }
+
+  while (stack.length) {
+    const i = stack.pop();
+    const d = i * 4;
+    rgba[d] = 0;
+    rgba[d + 1] = 0;
+    rgba[d + 2] = 0;
+    rgba[d + 3] = 0;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) {
+      const ni = i - 1;
+      if (!seen[ni] && isNearWhite(rgb[ni * 3], rgb[ni * 3 + 1], rgb[ni * 3 + 2])) {
+        seen[ni] = 1;
+        stack.push(ni);
+      }
+    }
+    if (x < w - 1) {
+      const ni = i + 1;
+      if (!seen[ni] && isNearWhite(rgb[ni * 3], rgb[ni * 3 + 1], rgb[ni * 3 + 2])) {
+        seen[ni] = 1;
+        stack.push(ni);
+      }
+    }
+    if (y > 0) {
+      const ni = i - w;
+      if (!seen[ni] && isNearWhite(rgb[ni * 3], rgb[ni * 3 + 1], rgb[ni * 3 + 2])) {
+        seen[ni] = 1;
+        stack.push(ni);
+      }
+    }
+    if (y < h - 1) {
+      const ni = i + w;
+      if (!seen[ni] && isNearWhite(rgb[ni * 3], rgb[ni * 3 + 1], rgb[ni * 3 + 2])) {
+        seen[ni] = 1;
+        stack.push(ni);
+      }
+    }
+  }
+
+  fs.writeFileSync(rgbaPath, rgba);
+  execSync(
+    `ffmpeg -y -f rawvideo -pix_fmt rgba -s ${w}x${h} -i "${rgbaPath}" "${destPath}"`,
+    { stdio: 'ignore' }
+  );
+  fs.unlinkSync(rgbPath);
+  fs.unlinkSync(rgbaPath);
+}
+
+/** Unity stored worm splat JPEGs with a .png extension. Pixi needs real PNG + alpha. */
+function copySpriteFile(srcPath, destPath) {
+  if (ffmpegAvailable && isJpeg(srcPath)) {
+    jpegToTransparentPng(srcPath, destPath);
+    console.log('Converted JPEG sprite', path.basename(srcPath));
+    return;
+  }
+  fs.copyFileSync(srcPath, destPath);
+}
+
 function copyRecursive(src, dest) {
   ensureDir(dest);
   for (const name of fs.readdirSync(src)) {
@@ -30,7 +173,7 @@ function copyRecursive(src, dest) {
     if (fs.statSync(srcPath).isDirectory()) {
       copyRecursive(srcPath, destPath);
     } else {
-      fs.copyFileSync(srcPath, destPath);
+      copySpriteFile(srcPath, destPath);
     }
   }
 }
@@ -48,18 +191,6 @@ if (fs.existsSync(spritesSrc)) {
 const audioSrc = path.join(repoRoot, 'Assets', 'sounds');
 const audioDest = path.join(publicDir, 'audio');
 ensureDir(audioDest);
-
-let ffmpegAvailable = false;
-try {
-  execSync('ffmpeg -version', { stdio: 'ignore' });
-  ffmpegAvailable = true;
-} catch (_) {}
-
-if (!ffmpegAvailable) {
-  console.warn(
-    'ffmpeg not found; .aiff will be copied as-is (browsers may not play it). Install ffmpeg for .mp3 conversion.'
-  );
-}
 
 if (fs.existsSync(audioSrc)) {
   for (const name of fs.readdirSync(audioSrc)) {

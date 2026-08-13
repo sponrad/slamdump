@@ -17,7 +17,6 @@ export type PooLandEvent = {
   y: number;
   inWater: boolean;
   hitRadius: number;
-  setSplatTexture: (url: string) => void;
 };
 
 export class Poo {
@@ -93,9 +92,6 @@ export class Poo {
         y: this.y,
         inWater,
         hitRadius: POO_HIT_RADIUS,
-        setSplatTexture: (url: string) => {
-          this.sprite.texture = Texture.from(url);
-        },
       });
       return;
     }
