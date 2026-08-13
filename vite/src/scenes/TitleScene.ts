@@ -15,14 +15,6 @@ import { canFullscreen, isFullscreen, toggleFullscreen, needsHomeScreenFullscree
 import { makeButton, fitDesignToScreen } from '../ui/ui';
 import { formatScore } from '../utils/format';
 
-const TITLE_STYLE = new TextStyle({
-  fontFamily: 'Arial Black, Arial, Helvetica, sans-serif',
-  fontSize: 64,
-  fill: 0xf5e6c8,
-  fontWeight: 'bold',
-  stroke: { color: 0x1a1208, width: 8, join: 'round' },
-});
-
 const SUB_STYLE = new TextStyle({
   fontFamily: 'Arial, Helvetica, sans-serif',
   fontSize: 22,

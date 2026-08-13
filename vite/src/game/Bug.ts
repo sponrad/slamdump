@@ -1,4 +1,4 @@
-import { Assets, Container, Sprite } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 import {
   BUG_DEFS,
   WORM_OFFSPRING_DELAY,
@@ -16,7 +16,6 @@ export type BugCallbacks = {
 
 export class Bug {
   readonly kind: BugKind;
-  readonly container: Container;
   readonly sprite: Sprite;
   alive = true;
   inWater = true;
@@ -28,16 +27,17 @@ export class Bug {
   private readonly playArea: Ellipse;
   private readonly water: Ellipse;
   private readonly cbs: BugCallbacks;
+  private readonly vx: number;
+  private readonly vy: number;
 
-  private constructor(
+  constructor(
     kind: BugKind,
-    texture: Awaited<ReturnType<typeof Assets.load>>,
     x: number,
     y: number,
     water: Ellipse,
     playArea: Ellipse,
     cbs: BugCallbacks,
-    forceDry: boolean
+    forceDry = false
   ) {
     this.kind = kind;
     this.def = BUG_DEFS[kind];
@@ -46,36 +46,30 @@ export class Bug {
     this.cbs = cbs;
     this.inWater = forceDry ? false : pointInEllipse(x, y, water);
 
-    this.container = new Container();
-    this.sprite = new Sprite(texture);
+    this.sprite = new Sprite(Texture.from(this.def.sprite));
     this.sprite.anchor.set(0.5);
     this.sprite.scale.set(this.def.displayScale);
-    this.container.addChild(this.sprite);
-    this.container.x = x;
-    this.container.y = y;
-
-    this.container.rotation = Math.random() * Math.PI * 2;
+    this.sprite.eventMode = 'none';
+    this.sprite.x = x;
+    this.sprite.y = y;
+    this.sprite.rotation = Math.random() * Math.PI * 2;
     this.speed = this.def.minSpeed + Math.random() * (this.def.speed - this.def.minSpeed);
-  }
 
-  static async create(
-    kind: BugKind,
-    x: number,
-    y: number,
-    water: Ellipse,
-    playArea: Ellipse,
-    cbs: BugCallbacks,
-    forceDry = false
-  ): Promise<Bug> {
-    const texture = await Assets.load(BUG_DEFS[kind].sprite);
-    return new Bug(kind, texture, x, y, water, playArea, cbs, forceDry);
+    const angle = this.sprite.rotation;
+    if (this.def.moveAxis === 'up') {
+      this.vx = Math.sin(angle) * this.speed;
+      this.vy = -Math.cos(angle) * this.speed;
+    } else {
+      this.vx = -Math.cos(angle) * this.speed;
+      this.vy = -Math.sin(angle) * this.speed;
+    }
   }
 
   get x(): number {
-    return this.container.x;
+    return this.sprite.x;
   }
   get y(): number {
-    return this.container.y;
+    return this.sprite.y;
   }
   get hitRadius(): number {
     return this.def.hitRadius;
@@ -95,15 +89,8 @@ export class Bug {
       return;
     }
 
-    const angle = this.container.rotation;
-    if (this.def.moveAxis === 'up') {
-      this.container.x += Math.sin(angle) * this.speed * dt;
-      this.container.y -= Math.cos(angle) * this.speed * dt;
-    } else {
-      // Unity: -= transform.right → move along -local X
-      this.container.x -= Math.cos(angle) * this.speed * dt;
-      this.container.y -= Math.sin(angle) * this.speed * dt;
-    }
+    this.sprite.x += this.vx * dt;
+    this.sprite.y += this.vy * dt;
 
     this.inWater = pointInEllipse(this.x, this.y, this.water);
 
@@ -113,7 +100,6 @@ export class Bug {
     }
   }
 
-  /** Returns true if this bug was splatted. */
   tryHit(): boolean {
     if (!this.alive || this.dying || this.inWater) return false;
 
@@ -121,7 +107,6 @@ export class Bug {
 
     if (this.def.isGolden) {
       Globals.goldenStool += 1;
-      this.speed = 0;
       this.dying = true;
       this.dieTimer = 0.4;
       return true;
@@ -131,14 +116,12 @@ export class Bug {
 
     if (this.def.isBigWorm) {
       this.sprite.visible = false;
-      this.speed = 0;
       this.dying = true;
       this.spawnKids = true;
       this.dieTimer = WORM_OFFSPRING_DELAY;
     } else {
       Globals.tempGameBugsKilled += 1;
       this.sprite.visible = false;
-      this.speed = 0;
       this.dying = true;
       this.dieTimer = 0.35;
     }
@@ -147,6 +130,6 @@ export class Bug {
 
   destroy(): void {
     this.alive = false;
-    this.container.destroy({ children: true });
+    this.sprite.destroy();
   }
 }

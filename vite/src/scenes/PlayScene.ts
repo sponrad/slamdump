@@ -60,8 +60,11 @@ export class PlayScene {
 
   private bugs: Bug[] = [];
   private poos: Poo[] = [];
-  private ripples: Ripple[] = [];
+  private ripple = new Ripple();
   private shake = new Shake();
+  private wasShaking = false;
+  private lastHudScore = -1;
+  private lastHudGolden = -1;
 
   private scoreText!: Text;
   private goldenText!: Text;
@@ -75,10 +78,16 @@ export class PlayScene {
     private app: Application,
     private onGameOver: () => void
   ) {
+    this.root.eventMode = 'none';
+    this.design.eventMode = 'none';
+    this.world.eventMode = 'none';
+    this.rippleLayer.eventMode = 'none';
+    this.fxLayer.eventMode = 'none';
     this.root.addChild(this.design);
     this.design.addChild(this.world);
     this.world.addChild(this.rippleLayer);
     this.world.addChild(this.fxLayer);
+    this.rippleLayer.addChild(this.ripple.sprite);
     this.design.addChild(this.hudLayer);
 
     this.debugLayer.eventMode = 'none';
@@ -139,19 +148,21 @@ export class PlayScene {
     this.restoreDebugToWorld();
     this.world.removeChildren();
     this.fxLayer.removeChildren();
-    this.rippleLayer.removeChildren();
 
     this.level = LEVELS[id];
     this.gameRunning = true;
     Globals.inGame = true;
+    this.lastHudScore = -1;
+    this.lastHudGolden = -1;
+    this.wasShaking = false;
 
     const bg = Sprite.from(this.level.bg);
     bg.width = DESIGN_W;
     bg.height = DESIGN_H;
+    bg.eventMode = 'none';
     this.world.addChild(bg);
 
-    // Water shade overlay — sized to match water ellipse
-    try {
+    if (!Globals.lowPowerMode) {
       const shade = Sprite.from('/sprites/watershade.png');
       shade.anchor.set(0.5);
       shade.x = this.level.water.cx;
@@ -159,19 +170,19 @@ export class PlayScene {
       shade.width = this.level.water.rx * 2;
       shade.height = this.level.water.ry * 2;
       shade.alpha = 0.4;
+      shade.eventMode = 'none';
       this.world.addChild(shade);
-    } catch {
-      /* optional */
     }
 
     if (!this.rippleLayer.parent) this.world.addChild(this.rippleLayer);
     if (!this.fxLayer.parent) this.world.addChild(this.fxLayer);
+    this.ripple.place(this.level.water.cx, this.level.water.cy);
     this.world.addChild(this.debugLayer);
     this.drawZoneDebug();
 
     this.spawnTimer = FIRST_SPAWN_DELAY;
     for (let i = 0; i < this.level.introBugs; i++) {
-      await this.spawnEnemy(false);
+      this.spawnEnemy(false);
     }
 
     this.updateHud();
@@ -215,16 +226,11 @@ export class PlayScene {
     if (x < 0 || y < 0 || x > DESIGN_W || y > DESIGN_H) return;
 
     const spawnX = POO_SPAWN_X_PAD + Math.random() * (DESIGN_W - POO_SPAWN_X_PAD * 2);
-    void Poo.create(spawnX, POO_SPAWN_Y, x, y, this.level.water, (ev) =>
+    const poo = new Poo(spawnX, POO_SPAWN_Y, x, y, this.level.water, (ev) =>
       this.handlePooLand(ev)
-    ).then((poo) => {
-      if (!this.gameRunning) {
-        poo.destroy();
-        return;
-      }
-      this.poos.push(poo);
-      this.fxLayer.addChild(poo.container);
-    });
+    );
+    this.poos.push(poo);
+    this.fxLayer.addChild(poo.sprite);
   };
 
   private onDebugToggleKeyDown = (e: KeyboardEvent): void => {
@@ -281,27 +287,29 @@ export class PlayScene {
 
   private handlePooLand(ev: PooLandEvent): void {
     this.shake.trigger();
-    // Unity Instantiated the ripple prefab at its default transform (bowl water center), not at the poo.
-    void Ripple.create(this.level.water.cx, this.level.water.cy).then((r) => {
-      if (!r.alive) return;
-      this.ripples.push(r);
-      this.rippleLayer.addChild(r.container);
-    });
+    this.ripple.replay();
 
     let hitSomeone = false;
-    for (const bug of this.bugs) {
+    const hitR = ev.hitRadius;
+    const ex = ev.x;
+    const ey = ev.y;
+    for (let i = 0; i < this.bugs.length; i++) {
+      const bug = this.bugs[i]!;
       if (!bug.alive) continue;
-      const d = Math.hypot(bug.x - ev.x, bug.y - ev.y);
-      if (d <= ev.hitRadius + bug.hitRadius && bug.tryHit()) {
+      const dx = bug.x - ex;
+      const dy = bug.y - ey;
+      const r = hitR + bug.hitRadius;
+      if (dx * dx + dy * dy <= r * r && bug.tryHit()) {
         hitSomeone = true;
         const splat = BUG_DEFS[bug.kind].splatSprite;
-        if (splat) void ev.setSplatTexture(splat);
+        if (splat) ev.setSplatTexture(splat);
       }
     }
     if (hitSomeone) this.updateHud();
+    else audioManager.playSplat();
   }
 
-  private async spawnEnemy(allowGolden: boolean): Promise<void> {
+  private spawnEnemy(allowGolden: boolean): void {
     let kind: BugKind;
     if (allowGolden && Math.random() < this.level.rewardBugChance) {
       kind = 'golden';
@@ -310,71 +318,84 @@ export class PlayScene {
       kind = pool[Math.floor(Math.random() * pool.length)]!;
     }
     const pos = randomPointInEllipse(this.level.water);
-    const bug = await Bug.create(kind, pos.x, pos.y, this.level.water, this.level.playArea, {
-      onEscaped: () => this.triggerGameOver(),
-      spawnOffspring: (x, y) => {
-        void this.spawnOffspring(x, y);
-      },
-    });
-    if (!this.gameRunning) {
-      bug.destroy();
-      return;
-    }
+    const bug = new Bug(
+      kind,
+      pos.x,
+      pos.y,
+      this.level.water,
+      this.level.playArea,
+      this.bugCbs
+    );
     this.bugs.push(bug);
-    this.fxLayer.addChild(bug.container);
+    this.fxLayer.addChild(bug.sprite);
   }
 
-  private async spawnOffspring(x: number, y: number): Promise<void> {
+  private spawnOffspring(x: number, y: number): void {
     for (let i = 0; i < 2; i++) {
-      const bug = await Bug.create(
+      const bug = new Bug(
         'wormSmall',
         x + (i === 0 ? -20 : 20),
         y + (Math.random() * 20 - 10),
         this.level.water,
         this.level.playArea,
-        {
-          onEscaped: () => this.triggerGameOver(),
-          spawnOffspring: () => undefined,
-        },
+        this.bugCbsNoKids,
         true
       );
-      if (!this.gameRunning) {
-        bug.destroy();
-        return;
-      }
       this.bugs.push(bug);
-      this.fxLayer.addChild(bug.container);
+      this.fxLayer.addChild(bug.sprite);
     }
   }
+
+  private readonly bugCbs = {
+    onEscaped: () => this.triggerGameOver(),
+    spawnOffspring: (x: number, y: number) => this.spawnOffspring(x, y),
+  };
+
+  private readonly bugCbsNoKids = {
+    onEscaped: () => this.triggerGameOver(),
+    spawnOffspring: () => undefined,
+  };
 
   private update(dt: number): void {
     if (!this.gameRunning) return;
     audioManager.beginFrame();
 
-    const offset = this.shake.update(dt);
-    // shake applied relative to layout base — store base in layout
-    this.design.x = this.layoutBase.offsetX + offset.x * this.layoutBase.scale;
-    this.design.y = this.layoutBase.offsetY + offset.y * this.layoutBase.scale;
+    const shaking = this.shake.active || this.wasShaking;
+    if (shaking) {
+      const offset = this.shake.update(dt);
+      this.design.x = this.layoutBase.offsetX + offset.x * this.layoutBase.scale;
+      this.design.y = this.layoutBase.offsetY + offset.y * this.layoutBase.scale;
+      this.wasShaking = this.shake.active;
+    }
 
-    for (const bug of this.bugs) bug.update(dt);
-    for (const poo of this.poos) poo.update(dt);
-    for (const r of this.ripples) r.update(dt);
+    let dead = false;
+    for (let i = 0; i < this.bugs.length; i++) {
+      const b = this.bugs[i]!;
+      b.update(dt);
+      if (!b.alive) dead = true;
+    }
+    for (let i = 0; i < this.poos.length; i++) {
+      const p = this.poos[i]!;
+      p.update(dt);
+      if (!p.alive) dead = true;
+    }
+    this.ripple.update(dt);
 
-    this.bugs = this.bugs.filter((b) => b.alive && b.container.parent);
-    this.poos = this.poos.filter((p) => p.alive && p.container.parent);
-    this.ripples = this.ripples.filter((r) => r.alive && r.container.parent);
+    if (dead) {
+      compactAlive(this.bugs);
+      compactAlive(this.poos);
+    }
 
     this.spawnTimer -= dt;
     if (this.spawnTimer <= 0) {
       this.spawnTimer = Math.random() * this.level.delayModifier;
-      // Unity: spawnCountFactor = ceil(0.05 * score * sin(0.4 * score^0.85))
       const score = Globals.score;
       const spawnCountFactor = Math.ceil(
         0.05 * score * Math.sin(0.4 * Math.pow(Math.max(score, 0), 0.85))
       );
-      void this.spawnEnemy(true);
+      this.spawnEnemy(true);
       for (let i = 0; i < spawnCountFactor; i++) {
-        void this.spawnEnemy(false);
+        this.spawnEnemy(false);
       }
     }
 
@@ -382,8 +403,14 @@ export class PlayScene {
   }
 
   private updateHud(): void {
-    this.scoreText.text = formatScore(Globals.score);
-    this.goldenText.text = `★ ${formatScore(Globals.goldenStool)}`;
+    if (this.lastHudScore !== Globals.score) {
+      this.lastHudScore = Globals.score;
+      this.scoreText.text = formatScore(Globals.score);
+    }
+    if (this.lastHudGolden !== Globals.goldenStool) {
+      this.lastHudGolden = Globals.goldenStool;
+      this.goldenText.text = `★ ${formatScore(Globals.goldenStool)}`;
+    }
   }
 
   private triggerGameOver(): void {
@@ -437,10 +464,10 @@ export class PlayScene {
   private clearEntities(): void {
     for (const b of this.bugs) b.destroy();
     for (const p of this.poos) p.destroy();
-    for (const r of this.ripples) r.destroy();
     this.bugs = [];
     this.poos = [];
-    this.ripples = [];
+    this.ripple.sprite.visible = false;
+    this.ripple.alive = false;
   }
 
   private layoutBase = { scale: 1, offsetX: 0, offsetY: 0 };
@@ -484,4 +511,13 @@ export class PlayScene {
     this.app.renderer.off('resize', this.layout);
     this.root.destroy({ children: true });
   }
+}
+
+function compactAlive<T extends { alive: boolean }>(list: T[]): void {
+  let write = 0;
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i]!;
+    if (item.alive) list[write++] = item;
+  }
+  list.length = write;
 }

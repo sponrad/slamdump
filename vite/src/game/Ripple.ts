@@ -1,51 +1,55 @@
-import { Assets, Container, Sprite } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 import { RIPPLE_LIFE, RIPPLE_START_SCALE } from './constants';
 
 /**
  * Port of RippleScript.cs — fade + slight shrink each frame.
- * Unity Instantiated the prefab on poo land (any surface).
+ * One instance is reused (all landings share the water-center ripple).
  */
 export class Ripple {
-  readonly container: Container;
-  private sprite: Sprite;
-  private life = RIPPLE_LIFE;
+  readonly sprite: Sprite;
+  alive = false;
+  private life = 0;
   private alpha = 1;
-  private scale: number;
-  alive = true;
+  private scale = RIPPLE_START_SCALE;
 
-  private constructor(texture: Awaited<ReturnType<typeof Assets.load>>, x: number, y: number) {
-    this.container = new Container();
-    this.sprite = new Sprite(texture);
+  constructor() {
+    this.sprite = new Sprite(Texture.from('/sprites/ripple.png'));
     this.sprite.anchor.set(0.5);
-    this.scale = RIPPLE_START_SCALE;
-    this.sprite.scale.set(this.scale);
-    this.container.addChild(this.sprite);
-    this.container.x = x;
-    this.container.y = y;
-    this.container.eventMode = 'none';
+    this.sprite.eventMode = 'none';
+    this.sprite.visible = false;
   }
 
-  static async create(x: number, y: number): Promise<Ripple> {
-    const texture = await Assets.load('/sprites/ripple.png');
-    return new Ripple(texture, x, y);
+  place(x: number, y: number): void {
+    this.sprite.x = x;
+    this.sprite.y = y;
+  }
+
+  replay(): void {
+    this.alive = true;
+    this.life = RIPPLE_LIFE;
+    this.alpha = 1;
+    this.scale = RIPPLE_START_SCALE;
+    this.sprite.alpha = 1;
+    this.sprite.scale.set(this.scale);
+    this.sprite.visible = true;
   }
 
   update(dt: number): void {
     if (!this.alive) return;
     const frames = dt * 60;
     this.life -= dt;
-    // Unity: alpha -= 0.05; scale -= 0.01 per Update
     this.alpha -= 0.05 * frames;
     this.scale -= 0.01 * frames;
     this.sprite.alpha = Math.max(0, this.alpha);
     this.sprite.scale.set(Math.max(0.01, this.scale));
     if (this.life <= 0 || this.alpha <= 0) {
-      this.destroy();
+      this.alive = false;
+      this.sprite.visible = false;
     }
   }
 
   destroy(): void {
     this.alive = false;
-    this.container.destroy({ children: true });
+    this.sprite.destroy();
   }
 }

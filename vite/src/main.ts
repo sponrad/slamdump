@@ -44,6 +44,7 @@ async function init(): Promise<void> {
     canvas: document.querySelector('#game') as HTMLCanvasElement,
     resizeTo: window,
     backgroundColor: 0x2a2520,
+    roundPixels: true,
     antialias: Globals.antialias,
     autoDensity: true,
     resolution,

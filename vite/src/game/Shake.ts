@@ -16,6 +16,10 @@ export class Shake {
     this.duration = Math.max(this.duration, duration);
   }
 
+  get active(): boolean {
+    return this.duration > 0;
+  }
+
   /** Returns offset to apply to world container. */
   update(dt: number): { x: number; y: number } {
     if (this.duration <= 0) {

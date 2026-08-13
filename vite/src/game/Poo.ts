@@ -1,4 +1,4 @@
-import { Assets, Container, Sprite } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 import {
   POO_DISPLAY_SCALE,
   POO_HIT_RADIUS,
@@ -17,11 +17,10 @@ export type PooLandEvent = {
   y: number;
   inWater: boolean;
   hitRadius: number;
-  setSplatTexture: (url: string) => Promise<void>;
+  setSplatTexture: (url: string) => void;
 };
 
 export class Poo {
-  readonly container: Container;
   readonly sprite: Sprite;
   alive = true;
   private targetX: number;
@@ -32,8 +31,7 @@ export class Poo {
   private water: Ellipse;
   private onLand: (e: PooLandEvent) => void;
 
-  private constructor(
-    texture: Awaited<ReturnType<typeof Assets.load>>,
+  constructor(
     x: number,
     y: number,
     tx: number,
@@ -46,13 +44,13 @@ export class Poo {
     this.targetX = tx;
     this.targetY = ty;
 
-    this.container = new Container();
-    this.sprite = new Sprite(texture);
+    const url = POO_SPRITES[Math.floor(Math.random() * POO_SPRITES.length)]!;
+    this.sprite = new Sprite(Texture.from(url));
     this.sprite.anchor.set(0.5);
     this.sprite.scale.set(POO_DISPLAY_SCALE);
-    this.container.addChild(this.sprite);
-    this.container.x = x;
-    this.container.y = y;
+    this.sprite.eventMode = 'none';
+    this.sprite.x = x;
+    this.sprite.y = y;
 
     this.rotSpeed = (Math.random() - 0.5) * POO_ROTATION_RANGE;
 
@@ -60,24 +58,11 @@ export class Poo {
     audioManager.playPooSpawn();
   }
 
-  static async create(
-    x: number,
-    y: number,
-    tx: number,
-    ty: number,
-    water: Ellipse,
-    onLand: (e: PooLandEvent) => void
-  ): Promise<Poo> {
-    const url = POO_SPRITES[Math.floor(Math.random() * POO_SPRITES.length)]!;
-    const texture = await Assets.load(url);
-    return new Poo(texture, x, y, tx, ty, water, onLand);
-  }
-
   get x(): number {
-    return this.container.x;
+    return this.sprite.x;
   }
   get y(): number {
-    return this.container.y;
+    return this.sprite.y;
   }
 
   update(dt: number): void {
@@ -91,16 +76,16 @@ export class Poo {
 
     if (this.landed) return;
 
-    this.container.rotation += this.rotSpeed * dt;
+    this.sprite.rotation += this.rotSpeed * dt;
 
-    const dx = this.targetX - this.container.x;
-    const dy = this.targetY - this.container.y;
+    const dx = this.targetX - this.sprite.x;
+    const dy = this.targetY - this.sprite.y;
     const dist = Math.hypot(dx, dy);
     const step = POO_SPEED * dt;
 
     if (dist <= step || dist < 0.5) {
-      this.container.x = this.targetX;
-      this.container.y = this.targetY;
+      this.sprite.x = this.targetX;
+      this.sprite.y = this.targetY;
       this.landed = true;
       const inWater = pointInEllipse(this.x, this.y, this.water);
       this.onLand({
@@ -108,20 +93,19 @@ export class Poo {
         y: this.y,
         inWater,
         hitRadius: POO_HIT_RADIUS,
-        setSplatTexture: async (url: string) => {
-          const tex = await Assets.load(url);
-          this.sprite.texture = tex;
+        setSplatTexture: (url: string) => {
+          this.sprite.texture = Texture.from(url);
         },
       });
       return;
     }
 
-    this.container.x += (dx / dist) * step;
-    this.container.y += (dy / dist) * step;
+    this.sprite.x += (dx / dist) * step;
+    this.sprite.y += (dy / dist) * step;
   }
 
   destroy(): void {
     this.alive = false;
-    this.container.destroy({ children: true });
+    this.sprite.destroy();
   }
 }
