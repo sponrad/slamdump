@@ -22,4 +22,6 @@ npm run build
 npm start          # serves dist + /api/scores
 ```
 
-Dokploy: build from `vite/` with the included Dockerfile. Persist `/data` for the leaderboard.
+Leaderboard is **SQLite** (`data/scores.sqlite` locally, `/data/scores.sqlite` in Docker). The API returns the top 10; the DB keeps full history.
+
+Dokploy: build from `vite/` with the included Dockerfile. Mount a persistent volume at `/data` so scores survive deploys. Set `SCORE_HMAC_SECRET` so run tokens survive restarts.

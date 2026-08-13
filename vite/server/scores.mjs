@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import initSqlJs from 'sql.js';
 
 export const MAX_SCORES = 10;
 export const MAX_NAME_LEN = 12;
@@ -32,8 +34,99 @@ const usedRuns = new Map();
 /** @type {Map<string, { salt: string, iat: number, exp: number }>} */
 const runSecrets = new Map();
 
-function scoresFile() {
-  return process.env.SCORES_FILE || process.env.SCORES_DB || path.join(process.cwd(), 'data', 'scores.json');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function scoresDbPath() {
+  return (
+    process.env.SCORES_DB ||
+    process.env.SCORES_FILE ||
+    path.join(process.cwd(), 'data', 'scores.sqlite')
+  );
+}
+
+function scoresJsonLegacyPath() {
+  const dbPath = scoresDbPath();
+  if (dbPath.endsWith('.sqlite') || dbPath.endsWith('.db')) {
+    return dbPath.replace(/\.sqlite$|\.db$/, '.json');
+  }
+  return path.join(path.dirname(dbPath), 'scores.json');
+}
+
+/** @type {import('sql.js').Database | null} */
+let sqliteDb = null;
+/** @type {Promise<import('sql.js').Database> | null} */
+let sqliteReady = null;
+
+async function ensureDb() {
+  if (sqliteDb) return sqliteDb;
+  if (sqliteReady) return sqliteReady;
+  sqliteReady = (async () => {
+    const wasmDir = path.join(__dirname, '..', 'node_modules', 'sql.js', 'dist');
+    const SQL = await initSqlJs({
+      locateFile: (file) => path.join(wasmDir, file),
+    });
+    const dbFile = scoresDbPath();
+    fs.mkdirSync(path.dirname(dbFile), { recursive: true });
+
+    if (fs.existsSync(dbFile)) {
+      sqliteDb = new SQL.Database(fs.readFileSync(dbFile));
+    } else {
+      sqliteDb = new SQL.Database();
+    }
+
+    sqliteDb.run(`
+      CREATE TABLE IF NOT EXISTS scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        score INTEGER NOT NULL,
+        golden_stool INTEGER NOT NULL DEFAULT 0,
+        at INTEGER NOT NULL
+      );
+    `);
+    sqliteDb.run(`CREATE INDEX IF NOT EXISTS idx_scores_rank ON scores (score DESC, at ASC);`);
+
+    migrateJsonIfNeeded();
+    persistDb();
+    return sqliteDb;
+  })();
+  return sqliteReady;
+}
+
+function persistDb() {
+  if (!sqliteDb) return;
+  const dbFile = scoresDbPath();
+  fs.mkdirSync(path.dirname(dbFile), { recursive: true });
+  const bytes = sqliteDb.export();
+  fs.writeFileSync(dbFile, Buffer.from(bytes));
+}
+
+function migrateJsonIfNeeded() {
+  if (!sqliteDb) return;
+  const count = sqliteDb.exec('SELECT COUNT(*) AS c FROM scores');
+  const n = Number(count[0]?.values?.[0]?.[0] ?? 0);
+  if (n > 0) return;
+
+  const jsonPath = scoresJsonLegacyPath();
+  if (!fs.existsSync(jsonPath)) return;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    if (!Array.isArray(parsed)) return;
+    const stmt = sqliteDb.prepare(
+      'INSERT INTO scores (name, score, golden_stool, at) VALUES (?, ?, ?, ?)'
+    );
+    for (const row of parsed) {
+      if (!row || typeof row !== 'object') continue;
+      const score = Math.floor(Number(row.score));
+      if (!Number.isFinite(score) || score < 0) continue;
+      const golden = Math.floor(Number(row.goldenStool ?? 0));
+      const at = Number.isFinite(Number(row.at)) ? Number(row.at) : Date.now();
+      stmt.run([sanitizeName(row.name), score, golden >= 0 ? golden : 0, at]);
+    }
+    stmt.free();
+    console.log('[scores] migrated', jsonPath, 'into sqlite');
+  } catch (err) {
+    console.warn('[scores] json migrate skipped', err);
+  }
 }
 
 function clientIp(req) {
@@ -154,34 +247,34 @@ function maxPlausibleScore(elapsedSec) {
 }
 
 function readAll() {
-  try {
-    const parsed = JSON.parse(fs.readFileSync(scoresFile(), 'utf8'));
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((row) => {
-        if (!row || typeof row !== 'object') return null;
-        const score = Math.floor(Number(row.score));
-        if (!Number.isFinite(score) || score < 0) return null;
-        const goldenStool = Math.floor(Number(row.goldenStool));
-        return {
-          name: sanitizeName(row.name),
-          score,
-          at: Number.isFinite(Number(row.at)) ? Number(row.at) : 0,
-          goldenStool: Number.isFinite(goldenStool) && goldenStool >= 0 ? goldenStool : 0,
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.score - a.score || a.at - b.at)
-      .slice(0, MAX_SCORES);
-  } catch {
-    return [];
+  if (!sqliteDb) return [];
+  const stmt = sqliteDb.prepare(
+    `SELECT name, score, golden_stool, at FROM scores ORDER BY score DESC, at ASC LIMIT ?`
+  );
+  stmt.bind([MAX_SCORES]);
+  const rows = [];
+  while (stmt.step()) {
+    const row = stmt.getAsObject();
+    rows.push({
+      name: sanitizeName(row.name),
+      score: Math.floor(Number(row.score) || 0),
+      goldenStool: Math.max(0, Math.floor(Number(row.golden_stool) || 0)),
+      at: Number(row.at) || 0,
+    });
   }
+  stmt.free();
+  return rows;
 }
 
-function writeAll(scores) {
-  const file = scoresFile();
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(scores));
+function insertScore(entry) {
+  if (!sqliteDb) return;
+  sqliteDb.run('INSERT INTO scores (name, score, golden_stool, at) VALUES (?, ?, ?, ?)', [
+    entry.name,
+    entry.score,
+    entry.goldenStool,
+    entry.at,
+  ]);
+  persistDb();
 }
 
 export function sanitizeName(raw) {
@@ -260,11 +353,8 @@ export function addScoreSecure(body) {
   usedRuns.set(payload.rid, Date.now());
   runSecrets.delete(payload.rid);
 
-  const next = [...current, { name, score, goldenStool, at: Date.now() }]
-    .sort((a, b) => b.score - a.score || a.at - b.at)
-    .slice(0, MAX_SCORES);
-  writeAll(next);
-  return { scores: next, added: true };
+  insertScore({ name, score, goldenStool, at: Date.now() });
+  return { scores: listScores(), added: true };
 }
 
 async function readJsonBody(req) {
@@ -302,6 +392,7 @@ export async function handleScoresApi(req, res) {
   const ip = clientIp(req);
 
   try {
+    await ensureDb();
     if (url === '/api/run/start' || url === '/api/run/start/') {
       if (req.method !== 'POST') {
         json(res, 405, { error: 'Method not allowed' });
