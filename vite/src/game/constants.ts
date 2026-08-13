@@ -31,17 +31,23 @@ export type LevelConfig = {
   rewardBugChance: number;
 };
 
-/** Shared toilet bowl placement for both portrait BGs (tune visually). */
-const WATER: Ellipse = { cx: 540, cy: 1180, rx: 230, ry: 280 };
-const PLAY: Ellipse = { cx: 540, cy: 1120, rx: 380, ry: 420 };
+/**
+ * Tuned from BG pixel traces (press 0 in dev to verify).
+ * Water = inner bowl well (murky water / drain). Play = outer seat oval (leave toilet = game over).
+ */
+const GAS_WATER: Ellipse = { cx: 540, cy: 1110, rx: 240, ry: 315 };
+const GAS_PLAY: Ellipse = { cx: 530, cy: 1090, rx: 540, ry: 605 };
+
+const PORTA_WATER: Ellipse = { cx: 538, cy: 1105, rx: 240, ry: 315 };
+const PORTA_PLAY: Ellipse = { cx: 540, cy: 1100, rx: 540, ry: 560 };
 
 export const LEVELS: Record<LevelId, LevelConfig> = {
   gasStation: {
     id: 'gasStation',
     name: 'Gas Station',
     bg: '/sprites/BGgasstation.png',
-    water: WATER,
-    playArea: PLAY,
+    water: GAS_WATER,
+    playArea: GAS_PLAY,
     enemyKinds: ['orangeRoach', 'greenPincher', 'wormBig', 'wormSmall'],
     introBugs: 5,
     delayModifier: 4,
@@ -51,8 +57,8 @@ export const LEVELS: Record<LevelId, LevelConfig> = {
     id: 'portaPotty',
     name: 'Porta Potty',
     bg: '/sprites/BGportapotty.png',
-    water: { ...WATER, cy: 1200 },
-    playArea: { ...PLAY, cy: 1140 },
+    water: PORTA_WATER,
+    playArea: PORTA_PLAY,
     enemyKinds: ['orangeRoach', 'greenPincher', 'wormBig', 'wormSmall'],
     introBugs: 5,
     delayModifier: 3.5,

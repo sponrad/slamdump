@@ -77,22 +77,32 @@ async function init(): Promise<void> {
   let current: SceneKey = 'title';
   let returnFromLb: SceneKey = 'title';
 
-  const hideAll = (): void => {
+  const hideMenus = (): void => {
     title.hide();
     levels.hide();
-    play.hide();
     gameOver.hide();
     leaderboard.hide();
   };
 
   const switchTo = (key: SceneKey): void => {
-    hideAll();
+    hideMenus();
     current = key;
-    if (key === 'title') title.show();
-    else if (key === 'levels') levels.show();
-    else if (key === 'play') play.show();
-    else if (key === 'gameOver') gameOver.show();
-    else if (key === 'leaderboard') leaderboard.show();
+    if (key === 'title') {
+      play.hide();
+      title.show();
+    } else if (key === 'levels') {
+      play.hide();
+      levels.show();
+    } else if (key === 'play') {
+      play.show();
+    } else if (key === 'gameOver') {
+      play.freeze();
+      gameOver.show();
+    } else if (key === 'leaderboard') {
+      if (returnFromLb !== 'gameOver') play.hide();
+      else play.lowerDebugOverlay();
+      leaderboard.show();
+    }
   };
 
   const startPlay = async (id: LevelId): Promise<void> => {

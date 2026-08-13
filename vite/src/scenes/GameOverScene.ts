@@ -62,10 +62,11 @@ export class GameOverScene {
     private onTitle: () => void,
     private onLeaderboard: () => void
   ) {
+    this.root.eventMode = 'static';
     this.root.addChild(this.design);
 
     const dim = new Graphics();
-    dim.rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x1a1208, alpha: 0.72 });
+    dim.rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x1a1208, alpha: 0.32 });
     this.design.addChild(dim);
 
     const title = new Text({ text: 'Game Over', style: TITLE_STYLE });
@@ -184,6 +185,7 @@ export class GameOverScene {
     this.design.scale.set(scale);
     this.design.x = offsetX;
     this.design.y = offsetY;
+    this.root.hitArea = this.app.screen;
   };
 
   show(): void {

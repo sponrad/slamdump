@@ -134,6 +134,7 @@ export class PlayScene {
   async startLevel(id: LevelId): Promise<void> {
     this.stopTicker();
     this.clearEntities();
+    this.restoreDebugToWorld();
     this.world.removeChildren();
     this.fxLayer.removeChildren();
 
@@ -146,15 +147,15 @@ export class PlayScene {
     bg.height = DESIGN_H;
     this.world.addChild(bg);
 
-    // Water shade overlay (subtle)
+    // Water shade overlay — sized to match water ellipse
     try {
       const shade = Sprite.from('/sprites/watershade.png');
       shade.anchor.set(0.5);
       shade.x = this.level.water.cx;
       shade.y = this.level.water.cy;
-      shade.width = this.level.water.rx * 2.2;
-      shade.height = this.level.water.ry * 2.2;
-      shade.alpha = 0.35;
+      shade.width = this.level.water.rx * 2;
+      shade.height = this.level.water.ry * 2;
+      shade.alpha = 0.4;
       this.world.addChild(shade);
     } catch {
       /* optional */
@@ -227,6 +228,11 @@ export class PlayScene {
     if (e.key !== '0') return;
     this.debugZonesEnabled = !this.debugZonesEnabled;
     this.drawZoneDebug();
+    if (this.debugZonesEnabled && !this.gameRunning && this.root.visible) {
+      this.bringDebugToFront();
+    } else if (!this.debugZonesEnabled) {
+      this.restoreDebugToWorld();
+    }
   };
 
   private drawZoneDebug(): void {
@@ -382,8 +388,39 @@ export class PlayScene {
     document.body.classList.remove('gameplay-active');
     this.unbindInput();
     this.stopTicker();
+    this.bringDebugToFront();
     audioManager.playGrunt();
     this.onGameOver();
+  }
+
+  /** Keep the last frame visible under Game Over, including zone overlays. */
+  freeze(): void {
+    document.body.classList.remove('gameplay-active');
+    this.unbindInput();
+    this.stopTicker();
+    this.gameRunning = false;
+    this.root.visible = true;
+    this.bringDebugToFront();
+  }
+
+  /** Put zone overlay back in the world (under menus). */
+  lowerDebugOverlay(): void {
+    this.restoreDebugToWorld();
+  }
+
+  private bringDebugToFront(): void {
+    if (!this.debugZonesEnabled) return;
+    this.drawZoneDebug();
+    this.debugLayer.scale.copyFrom(this.design.scale);
+    this.debugLayer.position.set(this.design.x, this.design.y);
+    this.app.stage.addChild(this.debugLayer);
+  }
+
+  private restoreDebugToWorld(): void {
+    this.debugLayer.scale.set(1);
+    this.debugLayer.position.set(0, 0);
+    this.world.addChild(this.debugLayer);
+    this.drawZoneDebug();
   }
 
   private stopTicker(): void {
@@ -416,6 +453,10 @@ export class PlayScene {
     this.design.x = fit.offsetX;
     this.design.y = fit.offsetY;
     this.shake.setBase(0, 0);
+    if (this.debugLayer.parent === this.app.stage) {
+      this.debugLayer.scale.copyFrom(this.design.scale);
+      this.debugLayer.position.set(this.design.x, this.design.y);
+    }
   };
 
   show(): void {
@@ -426,6 +467,7 @@ export class PlayScene {
     this.root.visible = false;
     document.body.classList.remove('gameplay-active');
     this.unbindInput();
+    this.restoreDebugToWorld();
   }
 
   destroy(): void {
