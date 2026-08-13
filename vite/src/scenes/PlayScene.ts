@@ -50,6 +50,10 @@ export class PlayScene {
   private design = new Container();
   private world = new Container();
   private rippleLayer = new Container();
+  private submergedLayer = new Container();
+  private waterLayer = new Container();
+  private corpseLayer = new Container();
+  private bugLayer = new Container();
   private fxLayer = new Container();
   private hudLayer = new Container();
   private debugLayer = new Container();
@@ -81,10 +85,18 @@ export class PlayScene {
     this.design.eventMode = 'none';
     this.world.eventMode = 'none';
     this.rippleLayer.eventMode = 'none';
+    this.submergedLayer.eventMode = 'none';
+    this.waterLayer.eventMode = 'none';
+    this.corpseLayer.eventMode = 'none';
+    this.bugLayer.eventMode = 'none';
     this.fxLayer.eventMode = 'none';
     this.root.addChild(this.design);
     this.design.addChild(this.world);
+    this.world.addChild(this.corpseLayer);
+    this.world.addChild(this.submergedLayer);
+    this.world.addChild(this.waterLayer);
     this.world.addChild(this.rippleLayer);
+    this.world.addChild(this.bugLayer);
     this.world.addChild(this.fxLayer);
     this.rippleLayer.addChild(this.ripple.sprite);
     this.design.addChild(this.hudLayer);
@@ -148,6 +160,10 @@ export class PlayScene {
     this.clearEntities();
     this.restoreDebugToWorld();
     this.world.removeChildren();
+    this.submergedLayer.removeChildren();
+    this.waterLayer.removeChildren();
+    this.corpseLayer.removeChildren();
+    this.bugLayer.removeChildren();
     this.fxLayer.removeChildren();
 
     this.level = LEVELS[id];
@@ -170,13 +186,17 @@ export class PlayScene {
       shade.y = this.level.water.cy;
       shade.width = this.level.water.rx * 2;
       shade.height = this.level.water.ry * 2;
-      shade.alpha = 0.4;
+      shade.alpha = 0.45;
       shade.eventMode = 'none';
-      this.world.addChild(shade);
+      this.waterLayer.addChild(shade);
     }
 
-    if (!this.rippleLayer.parent) this.world.addChild(this.rippleLayer);
-    if (!this.fxLayer.parent) this.world.addChild(this.fxLayer);
+    this.world.addChild(this.corpseLayer);
+    this.world.addChild(this.submergedLayer);
+    this.world.addChild(this.waterLayer);
+    this.world.addChild(this.rippleLayer);
+    this.world.addChild(this.bugLayer);
+    this.world.addChild(this.fxLayer);
     this.ripple.place(this.level.water.cx, this.level.water.cy);
     this.world.addChild(this.debugLayer);
     this.drawZoneDebug();
@@ -302,10 +322,16 @@ export class PlayScene {
       const r = hitR + bug.hitRadius;
       if (dx * dx + dy * dy <= r * r && bug.tryHit()) {
         hitSomeone = true;
+        this.corpseLayer.addChild(bug.sprite);
       }
     }
     if (hitSomeone) this.updateHud();
     else audioManager.playSplat();
+  }
+
+  private placeBugSprite(bug: Bug): void {
+    const layer = bug.inWater ? this.submergedLayer : this.bugLayer;
+    if (bug.sprite.parent !== layer) layer.addChild(bug.sprite);
   }
 
   private spawnEnemy(allowGolden: boolean): void {
@@ -326,7 +352,7 @@ export class PlayScene {
       this.bugCbs
     );
     this.bugs.push(bug);
-    this.fxLayer.addChild(bug.sprite);
+    this.placeBugSprite(bug);
   }
 
   private spawnOffspring(x: number, y: number): void {
@@ -341,7 +367,7 @@ export class PlayScene {
         true
       );
       this.bugs.push(bug);
-      this.fxLayer.addChild(bug.sprite);
+      this.placeBugSprite(bug);
     }
   }
 
@@ -371,6 +397,7 @@ export class PlayScene {
     for (let i = 0; i < this.bugs.length; i++) {
       const b = this.bugs[i]!;
       b.update(dt);
+      if (b.alive && !b.isDying) this.placeBugSprite(b);
       if (!b.alive) dead = true;
     }
     for (let i = 0; i < this.poos.length; i++) {

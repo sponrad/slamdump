@@ -9,6 +9,8 @@ import { pointInEllipse } from './WaterBounds';
 import { Globals } from './Globals';
 import { audioManager } from '../audio/AudioManager';
 
+const WATER_TINT = 0x9ec8e8;
+
 export type BugCallbacks = {
   onEscaped: () => void;
   spawnOffspring: (x: number, y: number) => void;
@@ -52,6 +54,7 @@ export class Bug {
     this.sprite.x = x;
     this.sprite.y = y;
     this.sprite.rotation = Math.random() * Math.PI * 2;
+    this.sprite.tint = this.inWater ? WATER_TINT : 0xffffff;
     this.speed = this.def.minSpeed + Math.random() * (this.def.speed - this.def.minSpeed);
 
     const angle = this.sprite.rotation;
@@ -74,6 +77,10 @@ export class Bug {
     return this.def.hitRadius;
   }
 
+  get isDying(): boolean {
+    return this.dying;
+  }
+
   update(dt: number): void {
     if (!this.alive) return;
 
@@ -92,6 +99,7 @@ export class Bug {
     this.sprite.y += this.vy * dt;
 
     this.inWater = pointInEllipse(this.x, this.y, this.water);
+    this.sprite.tint = this.inWater ? WATER_TINT : 0xffffff;
 
     if (!pointInEllipse(this.x, this.y, this.playArea)) {
       this.alive = false;
