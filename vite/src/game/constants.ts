@@ -138,7 +138,9 @@ export const POO_SPAWN_Y = 40;
 export const POO_SPAWN_X_PAD = 80;
 
 export const WORM_OFFSPRING_DELAY = 1.5;
+/** Unity RippleScript: ~2s cap, but alpha 0.05/frame dies first (~0.33s). */
 export const RIPPLE_LIFE = 2;
+export const RIPPLE_START_SCALE = 0.95;
 export const SHAKE_AMOUNT = 12;
 export const SHAKE_DURATION = 0.2;
 

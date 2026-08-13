@@ -50,6 +50,7 @@ export class PlayScene {
   readonly root = new Container();
   private design = new Container();
   private world = new Container();
+  private rippleLayer = new Container();
   private fxLayer = new Container();
   private hudLayer = new Container();
   private debugLayer = new Container();
@@ -76,6 +77,7 @@ export class PlayScene {
   ) {
     this.root.addChild(this.design);
     this.design.addChild(this.world);
+    this.world.addChild(this.rippleLayer);
     this.world.addChild(this.fxLayer);
     this.design.addChild(this.hudLayer);
 
@@ -137,6 +139,7 @@ export class PlayScene {
     this.restoreDebugToWorld();
     this.world.removeChildren();
     this.fxLayer.removeChildren();
+    this.rippleLayer.removeChildren();
 
     this.level = LEVELS[id];
     this.gameRunning = true;
@@ -161,6 +164,7 @@ export class PlayScene {
       /* optional */
     }
 
+    if (!this.rippleLayer.parent) this.world.addChild(this.rippleLayer);
     if (!this.fxLayer.parent) this.world.addChild(this.fxLayer);
     this.world.addChild(this.debugLayer);
     this.drawZoneDebug();
@@ -277,10 +281,11 @@ export class PlayScene {
 
   private handlePooLand(ev: PooLandEvent): void {
     this.shake.trigger();
-    void Ripple.create(ev.x, ev.y).then((r) => {
+    // Unity Instantiated the ripple prefab at its default transform (bowl water center), not at the poo.
+    void Ripple.create(this.level.water.cx, this.level.water.cy).then((r) => {
       if (!r.alive) return;
       this.ripples.push(r);
-      this.fxLayer.addChild(r.container);
+      this.rippleLayer.addChild(r.container);
     });
 
     let hitSomeone = false;
