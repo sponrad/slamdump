@@ -131,7 +131,13 @@ export class Bug {
     const liveW = this.sprite.texture.width * Math.abs(this.sprite.scale.x);
     this.sprite.texture = Texture.from(splat);
     const splatW = this.sprite.texture.width || 1;
-    this.sprite.scale.set(liveW / splatW);
+    // Worm splat JPEGs are huge vs the live sprites; roach splats are already
+    // authored at a similar size and should keep displayScale.
+    if (this.kind === 'wormBig' || this.kind === 'wormSmall') {
+      this.sprite.scale.set(liveW / splatW);
+    } else {
+      this.sprite.scale.set(this.def.displayScale);
+    }
     this.sprite.visible = true;
   }
 
