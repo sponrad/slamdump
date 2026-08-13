@@ -21,8 +21,7 @@ export class Bug {
   inWater = true;
   private speed: number;
   private dying = false;
-  private dieTimer = 0;
-  private spawnKids = false;
+  private kidTimer = -1;
   private readonly def: (typeof BUG_DEFS)[BugKind];
   private readonly playArea: Ellipse;
   private readonly water: Ellipse;
@@ -79,12 +78,12 @@ export class Bug {
     if (!this.alive) return;
 
     if (this.dying) {
-      this.dieTimer -= dt;
-      if (this.dieTimer <= 0) {
-        if (this.spawnKids) {
+      if (this.kidTimer >= 0) {
+        this.kidTimer -= dt;
+        if (this.kidTimer <= 0) {
+          this.kidTimer = -1;
           this.cbs.spawnOffspring(this.x, this.y);
         }
-        this.destroy();
       }
       return;
     }
@@ -106,24 +105,19 @@ export class Bug {
     audioManager.playSplat();
 
     this.showSplat();
+    this.dying = true;
 
     if (this.def.isGolden) {
       Globals.goldenStool += 1;
-      this.dying = true;
-      this.dieTimer = 0.4;
       return true;
     }
 
     Globals.score += 1;
 
     if (this.def.isBigWorm) {
-      this.dying = true;
-      this.spawnKids = true;
-      this.dieTimer = WORM_OFFSPRING_DELAY;
+      this.kidTimer = WORM_OFFSPRING_DELAY;
     } else {
       Globals.tempGameBugsKilled += 1;
-      this.dying = true;
-      this.dieTimer = 0.35;
     }
     return true;
   }
