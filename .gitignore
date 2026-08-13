@@ -35,5 +35,3 @@ sysinfo.txt
 vite/node_modules/
 vite/dist/
 vite/data/
-vite/public/sprites/
-vite/public/audio/

@@ -6,6 +6,10 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+# Sprites/audio live in public/ (gitignored used to omit them — the image then
+# shipped with no art and Pixi died on boot with "Failed to load").
+RUN test -f public/sprites/titleBG.png \
+  || (echo "Missing public/sprites. From vite/: npm run assets, commit public/sprites and public/audio, then rebuild." && exit 1)
 RUN npm run build
 
 # Serve static dist + shared leaderboard API
