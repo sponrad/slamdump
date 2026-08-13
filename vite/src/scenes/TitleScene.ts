@@ -58,19 +58,13 @@ export class TitleScene {
     bg.height = DESIGN_H;
     this.design.addChild(bg);
 
-    const title = new Text({ text: 'SlamDump', style: TITLE_STYLE });
-    title.anchor.set(0.5);
-    title.x = DESIGN_W / 2;
-    title.y = 280;
-    this.design.addChild(title);
-
     const best = new Text({
       text: `Best: ${formatScore(Globals.highScore)}`,
       style: SUB_STYLE,
     });
     best.anchor.set(0.5);
     best.x = DESIGN_W / 2;
-    best.y = 360;
+    best.y = 900;
     this.design.addChild(best);
 
     const stool = new Text({
@@ -79,7 +73,7 @@ export class TitleScene {
     });
     stool.anchor.set(0.5);
     stool.x = DESIGN_W / 2;
-    stool.y = 400;
+    stool.y = 930;
     this.design.addChild(stool);
 
     const playBtn = makeButton('Play', 280, 72);
